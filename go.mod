@@ -25,6 +25,8 @@ require (
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
+	github.com/ethereum/go-ethereum v1.10.13
+	github.com/ComposableFi/go-merkle-trees v0.0.0-20220118130130-2247e75ded7e
 )
 
 require github.com/zondax/hid v0.9.1-0.20220302062450-5552068d2266 // indirect
