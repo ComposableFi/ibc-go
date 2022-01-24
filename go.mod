@@ -33,6 +33,16 @@ require (
 require github.com/zondax/hid v0.9.1-0.20220302062450-5552068d2266 // indirect
 
 require (
+	github.com/ChainSafe/gossamer v0.6.1-0.20220114214423-e1f7f96cb8cb
+	github.com/centrifuge/go-substrate-rpc-client v2.0.0+incompatible
+	github.com/jhump/protoreflect v1.9.1-0.20210817181203-db1a327a393e // indirect
+	github.com/klauspost/compress v1.13.5 // indirect
+	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
+	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
+	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
+)
+
+require (
 	cloud.google.com/go v0.100.2 // indirect
 	cloud.google.com/go/compute v1.6.1 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
@@ -134,6 +144,8 @@ require (
 	github.com/tendermint/btcd v0.1.1 // indirect
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
+	github.com/vedhavyas/go-subkey v1.0.2 // indirect
+	github.com/zondax/hid v0.9.0 // indirect
 	github.com/ulikunitz/xz v0.5.8 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.opencensus.io v0.23.0 // indirect
