@@ -42,7 +42,7 @@ require (
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
 )
 
-require github.com/snowfork/go-substrate-rpc-client/v3 v3.0.8
+require github.com/snowfork/go-substrate-rpc-client/v4 v4.0.0
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
