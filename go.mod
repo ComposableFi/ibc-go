@@ -34,7 +34,6 @@ require github.com/zondax/hid v0.9.1-0.20220302062450-5552068d2266 // indirect
 
 require (
 	github.com/ChainSafe/gossamer v0.6.1-0.20220114214423-e1f7f96cb8cb
-	github.com/centrifuge/go-substrate-rpc-client v2.0.0+incompatible
 	github.com/jhump/protoreflect v1.9.1-0.20210817181203-db1a327a393e // indirect
 	github.com/klauspost/compress v1.13.5 // indirect
 	golang.org/x/crypto v0.0.0-20220128200615-198e4374d7ed // indirect
