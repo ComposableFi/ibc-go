@@ -13,6 +13,18 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+func Reverse(original []byte) ([]byte) {
+    var reversed = make([]byte, len(original))
+    copy(reversed, original)
+
+    for i := len(reversed)/2 - 1; i >= 0; i-- {
+        tmp := len(reversed) - 1 - i
+        reversed[i], reversed[tmp] = reversed[tmp], reversed[i]
+    }
+
+    return reversed
+}
+
 func TestTrieProof(t *testing.T) {
 	key, err := hex.DecodeString("f0c365c3cf59d671eb72da0e7a4113c4bbd108c4899964f707fdaffb82636065")
 	if err != nil {
@@ -34,7 +46,7 @@ func TestTrieProof(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	var proof = [][]byte{
+	var proof = [][]byte {
 		bytes1, bytes2, bytes3,
 	}
 	trie := trie.NewEmptyTrie()
@@ -43,7 +55,7 @@ func TestTrieProof(t *testing.T) {
 		panic(err)
 	}
 	value :=  trie.Get(key)
-	fmt.Printf("value: %s\n", value)
+	fmt.Printf("\n\nvalue: %s\n\n\n", value)
 }
 
 func TestMultiLeafMmrProofs(t *testing.T) {
