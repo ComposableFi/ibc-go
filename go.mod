@@ -33,15 +33,18 @@ require (
 require github.com/zondax/hid v0.9.1-0.20220302062450-5552068d2266 // indirect
 
 require (
-	github.com/ChainSafe/gossamer v0.6.1-0.20220114214423-e1f7f96cb8cb
+	github.com/ChainSafe/gossamer v0.6.1-0.20220406182257-98400b30ca00
 	github.com/jhump/protoreflect v1.9.1-0.20210817181203-db1a327a393e // indirect
+	github.com/klauspost/compress v1.15.1 // indirect
+	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29 // indirect
+	golang.org/x/sys v0.0.0-20220405052023-b1e9470b6e64 // indirect
 	github.com/klauspost/compress v1.13.5 // indirect
 	golang.org/x/crypto v0.0.0-20220128200615-198e4374d7ed // indirect
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
 )
 
-require github.com/snowfork/go-substrate-rpc-client/v4 v4.0.0
+require github.com/ComposableFi/go-substrate-rpc-client/v4 v4.0.1-0.20220405141722-bde327160dc8
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
