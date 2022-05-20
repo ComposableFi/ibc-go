@@ -60,6 +60,17 @@ require (
 	github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d // indirect
 	github.com/Workiva/go-datastructures v1.0.53 // indirect
 	github.com/aws/aws-sdk-go v1.40.45 // indirect
+	github.com/ChainSafe/log15 v1.0.0
+	github.com/ComposableFi/go-substrate-rpc-client/v4 v4.0.1-0.20220520095549-28b7c5a4e212
+)
+
+require (
+	filippo.io/edwards25519 v1.0.0-beta.2 // indirect
+	github.com/99designs/keyring v1.1.6 // indirect
+	github.com/ChainSafe/chaindb v0.1.5-0.20220322154826-c0d431995732 // indirect
+	github.com/ChainSafe/go-schnorrkel v1.0.0 // indirect
+	github.com/OneOfOne/xxhash v1.2.8 // indirect
+	github.com/Workiva/go-datastructures v1.0.52 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
