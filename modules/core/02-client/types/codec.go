@@ -23,7 +23,7 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	)
 	registry.RegisterInterface(
 		"ibc.core.client.v1.Header",
-		(*exported.ClientMessage)(nil),
+		(*exported.Header)(nil),
 	)
 	registry.RegisterInterface(
 		"ibc.core.client.v1.Height",
@@ -32,7 +32,7 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	)
 	registry.RegisterInterface(
 		"ibc.core.client.v1.Misbehaviour",
-		(*exported.ClientMessage)(nil),
+		(*exported.Misbehaviour)(nil),
 	)
 	registry.RegisterImplementations(
 		(*govtypes.Content)(nil),
@@ -124,34 +124,66 @@ func UnpackConsensusState(any *codectypes.Any) (exported.ConsensusState, error) 
 	return consensusState, nil
 }
 
-// PackClientMessage constructs a new Any packed with the given value. It returns
-// an error if the value can't be casted to a protobuf message or if the concrete
+// PackHeader constructs a new Any packed with the given header value. It returns
+// an error if the header can't be casted to a protobuf message or if the concrete
 // implemention is not registered to the protobuf codec.
-func PackClientMessage(clientMessage exported.ClientMessage) (*codectypes.Any, error) {
-	msg, ok := clientMessage.(proto.Message)
+func PackHeader(header exported.Header) (*codectypes.Any, error) {
+	msg, ok := header.(proto.Message)
 	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrPackAny, "cannot proto marshal %T", clientMessage)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrPackAny, "cannot proto marshal %T", header)
 	}
 
-	any, err := codectypes.NewAnyWithValue(msg)
+	anyHeader, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrPackAny, err.Error())
 	}
 
-	return any, nil
+	return anyHeader, nil
 }
 
-// UnpackClientMessage unpacks an Any into a ClientMessage. It returns an error if the
-// consensus state can't be unpacked into a ClientMessage.
-func UnpackClientMessage(any *codectypes.Any) (exported.ClientMessage, error) {
+// UnpackHeader unpacks an Any into a Header. It returns an error if the
+// consensus state can't be unpacked into a Header.
+func UnpackHeader(any *codectypes.Any) (exported.Header, error) {
 	if any == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnpackAny, "protobuf Any message cannot be nil")
 	}
 
-	clientMessage, ok := any.GetCachedValue().(exported.ClientMessage)
+	header, ok := any.GetCachedValue().(exported.Header)
 	if !ok {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnpackAny, "cannot unpack Any into Header %T", any)
 	}
 
-	return clientMessage, nil
+	return header, nil
+}
+
+// PackMisbehaviour constructs a new Any packed with the given misbehaviour value. It returns
+// an error if the misbehaviour can't be casted to a protobuf message or if the concrete
+// implemention is not registered to the protobuf codec.
+func PackMisbehaviour(misbehaviour exported.Misbehaviour) (*codectypes.Any, error) {
+	msg, ok := misbehaviour.(proto.Message)
+	if !ok {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrPackAny, "cannot proto marshal %T", misbehaviour)
+	}
+
+	anyMisbhaviour, err := codectypes.NewAnyWithValue(msg)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrPackAny, err.Error())
+	}
+
+	return anyMisbhaviour, nil
+}
+
+// UnpackMisbehaviour unpacks an Any into a Misbehaviour. It returns an error if the
+// Any can't be unpacked into a Misbehaviour.
+func UnpackMisbehaviour(any *codectypes.Any) (exported.Misbehaviour, error) {
+	if any == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnpackAny, "protobuf Any message cannot be nil")
+	}
+
+	misbehaviour, ok := any.GetCachedValue().(exported.Misbehaviour)
+	if !ok {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnpackAny, "cannot unpack Any into Misbehaviour %T", any)
+	}
+
+	return misbehaviour, nil
 }

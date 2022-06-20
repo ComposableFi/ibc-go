@@ -86,29 +86,29 @@ func UnmarshalConsensusState(cdc codec.BinaryCodec, bz []byte) (exported.Consens
 	return consensusState, nil
 }
 
-// MarshalClientMessage protobuf serializes a ClientMessage interface
-func MarshalClientMessage(cdc codec.BinaryCodec, clientMessage exported.ClientMessage) ([]byte, error) {
-	return cdc.MarshalInterface(clientMessage)
+// MarshalHeader protobuf serializes a Header interface
+func MarshalHeader(cdc codec.BinaryCodec, h exported.Header) ([]byte, error) {
+	return cdc.MarshalInterface(h)
 }
 
-// MustMarshalClientMessage attempts to encode a ClientMessage object and returns the
+// MustMarshalHeader attempts to encode a Header object and returns the
 // raw encoded bytes. It panics on error.
-func MustMarshalClientMessage(cdc codec.BinaryCodec, clientMessage exported.ClientMessage) []byte {
-	bz, err := MarshalClientMessage(cdc, clientMessage)
+func MustMarshalHeader(cdc codec.BinaryCodec, header exported.Header) []byte {
+	bz, err := MarshalHeader(cdc, header)
 	if err != nil {
-		panic(fmt.Errorf("failed to encode ClientMessage: %w", err))
+		panic(fmt.Errorf("failed to encode header: %w", err))
 	}
 
 	return bz
 }
 
-// UnmarshalClientMessage returns a ClientMessage interface from raw proto encoded header bytes.
+// UnmarshalHeader returns a Header interface from raw proto encoded header bytes.
 // An error is returned upon decoding failure.
-func UnmarshalClientMessage(cdc codec.BinaryCodec, bz []byte) (exported.ClientMessage, error) {
-	var clientMessage exported.ClientMessage
-	if err := cdc.UnmarshalInterface(bz, &clientMessage); err != nil {
+func UnmarshalHeader(cdc codec.BinaryCodec, bz []byte) (exported.Header, error) {
+	var header exported.Header
+	if err := cdc.UnmarshalInterface(bz, &header); err != nil {
 		return nil, err
 	}
 
-	return clientMessage, nil
+	return header, nil
 }

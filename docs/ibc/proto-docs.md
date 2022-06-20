@@ -37,6 +37,8 @@
     - [QueryDenomTraceResponse](#ibc.applications.transfer.v1.QueryDenomTraceResponse)
     - [QueryDenomTracesRequest](#ibc.applications.transfer.v1.QueryDenomTracesRequest)
     - [QueryDenomTracesResponse](#ibc.applications.transfer.v1.QueryDenomTracesResponse)
+    - [QueryEscrowAddressRequest](#ibc.applications.transfer.v1.QueryEscrowAddressRequest)
+    - [QueryEscrowAddressResponse](#ibc.applications.transfer.v1.QueryEscrowAddressResponse)
     - [QueryParamsRequest](#ibc.applications.transfer.v1.QueryParamsRequest)
     - [QueryParamsResponse](#ibc.applications.transfer.v1.QueryParamsResponse)
   
@@ -145,6 +147,8 @@
     - [QueryClientStatesResponse](#ibc.core.client.v1.QueryClientStatesResponse)
     - [QueryClientStatusRequest](#ibc.core.client.v1.QueryClientStatusRequest)
     - [QueryClientStatusResponse](#ibc.core.client.v1.QueryClientStatusResponse)
+    - [QueryConsensusStateHeightsRequest](#ibc.core.client.v1.QueryConsensusStateHeightsRequest)
+    - [QueryConsensusStateHeightsResponse](#ibc.core.client.v1.QueryConsensusStateHeightsResponse)
     - [QueryConsensusStateRequest](#ibc.core.client.v1.QueryConsensusStateRequest)
     - [QueryConsensusStateResponse](#ibc.core.client.v1.QueryConsensusStateResponse)
     - [QueryConsensusStatesRequest](#ibc.core.client.v1.QueryConsensusStatesRequest)
@@ -217,20 +221,8 @@
 - [ibc/core/types/v1/genesis.proto](#ibc/core/types/v1/genesis.proto)
     - [GenesisState](#ibc.core.types.v1.GenesisState)
   
-- [ibc/lightclients/beefy/v1/beefy.proto](#ibc/lightclients/beefy/v1/beefy.proto)
-    - [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet)
-    - [BeefyMmrLeaf](#ibc.lightclients.beefy.v1.BeefyMmrLeaf)
-    - [BeefyMmrLeafPartial](#ibc.lightclients.beefy.v1.BeefyMmrLeafPartial)
-    - [ClientState](#ibc.lightclients.beefy.v1.ClientState)
-    - [Commitment](#ibc.lightclients.beefy.v1.Commitment)
-    - [CommitmentSignature](#ibc.lightclients.beefy.v1.CommitmentSignature)
-    - [ConsensusState](#ibc.lightclients.beefy.v1.ConsensusState)
-    - [Header](#ibc.lightclients.beefy.v1.Header)
-    - [Misbehaviour](#ibc.lightclients.beefy.v1.Misbehaviour)
-    - [MmrUpdateProof](#ibc.lightclients.beefy.v1.MmrUpdateProof)
-    - [ParachainHeader](#ibc.lightclients.beefy.v1.ParachainHeader)
-    - [PayloadItem](#ibc.lightclients.beefy.v1.PayloadItem)
-    - [SignedCommitment](#ibc.lightclients.beefy.v1.SignedCommitment)
+- [ibc/lightclients/localhost/v1/localhost.proto](#ibc/lightclients/localhost/v1/localhost.proto)
+    - [ClientState](#ibc.lightclients.localhost.v1.ClientState)
   
 - [ibc/lightclients/solomachine/v1/solomachine.proto](#ibc/lightclients/solomachine/v1/solomachine.proto)
     - [ChannelStateData](#ibc.lightclients.solomachine.v1.ChannelStateData)
@@ -648,7 +640,7 @@ method
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `hash` | [string](#string) |  | hash (in hex format) of the denomination trace information. |
+| `hash` | [string](#string) |  | hash (in hex format) or denom (full denom with ibc prefix) of the denomination trace information. |
 
 
 
@@ -704,6 +696,37 @@ method.
 
 
 
+<a name="ibc.applications.transfer.v1.QueryEscrowAddressRequest"></a>
+
+### QueryEscrowAddressRequest
+QueryEscrowAddressRequest is the request type for the EscrowAddress RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `port_id` | [string](#string) |  | unique port identifier |
+| `channel_id` | [string](#string) |  | unique channel identifier |
+
+
+
+
+
+
+<a name="ibc.applications.transfer.v1.QueryEscrowAddressResponse"></a>
+
+### QueryEscrowAddressResponse
+QueryEscrowAddressResponse is the response type of the EscrowAddress RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `escrow_address` | [string](#string) |  | the escrow account address |
+
+
+
+
+
+
 <a name="ibc.applications.transfer.v1.QueryParamsRequest"></a>
 
 ### QueryParamsRequest
@@ -746,6 +769,7 @@ Query provides defines the gRPC querier service.
 | `DenomTraces` | [QueryDenomTracesRequest](#ibc.applications.transfer.v1.QueryDenomTracesRequest) | [QueryDenomTracesResponse](#ibc.applications.transfer.v1.QueryDenomTracesResponse) | DenomTraces queries all denomination traces. | GET|/ibc/apps/transfer/v1/denom_traces|
 | `Params` | [QueryParamsRequest](#ibc.applications.transfer.v1.QueryParamsRequest) | [QueryParamsResponse](#ibc.applications.transfer.v1.QueryParamsResponse) | Params queries all parameters of the ibc-transfer module. | GET|/ibc/apps/transfer/v1/params|
 | `DenomHash` | [QueryDenomHashRequest](#ibc.applications.transfer.v1.QueryDenomHashRequest) | [QueryDenomHashResponse](#ibc.applications.transfer.v1.QueryDenomHashResponse) | DenomHash queries a denomination hash information. | GET|/ibc/apps/transfer/v1/denom_hashes/{trace}|
+| `EscrowAddress` | [QueryEscrowAddressRequest](#ibc.applications.transfer.v1.QueryEscrowAddressRequest) | [QueryEscrowAddressResponse](#ibc.applications.transfer.v1.QueryEscrowAddressResponse) | EscrowAddress returns the escrow address for a particular port and channel id. | GET|/ibc/apps/transfer/v1/channels/{channel_id}/ports/{port_id}/escrow_address|
 
  <!-- end services -->
 
@@ -1910,6 +1934,7 @@ MsgChannelOpenInitResponse defines the Msg/ChannelOpenInit response type.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `channel_id` | [string](#string) |  |  |
+| `version` | [string](#string) |  |  |
 
 
 
@@ -1943,6 +1968,11 @@ value will be ignored by core IBC.
 
 ### MsgChannelOpenTryResponse
 MsgChannelOpenTryResponse defines the Msg/ChannelOpenTry response type.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `version` | [string](#string) |  |  |
 
 
 
@@ -2296,6 +2326,40 @@ method. It returns the current status of the IBC client.
 
 
 
+<a name="ibc.core.client.v1.QueryConsensusStateHeightsRequest"></a>
+
+### QueryConsensusStateHeightsRequest
+QueryConsensusStateHeightsRequest is the request type for Query/ConsensusStateHeights
+RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `client_id` | [string](#string) |  | client identifier |
+| `pagination` | [cosmos.base.query.v1beta1.PageRequest](#cosmos.base.query.v1beta1.PageRequest) |  | pagination request |
+
+
+
+
+
+
+<a name="ibc.core.client.v1.QueryConsensusStateHeightsResponse"></a>
+
+### QueryConsensusStateHeightsResponse
+QueryConsensusStateHeightsResponse is the response type for the
+Query/ConsensusStateHeights RPC method
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `consensus_state_heights` | [Height](#ibc.core.client.v1.Height) | repeated | consensus state heights |
+| `pagination` | [cosmos.base.query.v1beta1.PageResponse](#cosmos.base.query.v1beta1.PageResponse) |  | pagination response |
+
+
+
+
+
+
 <a name="ibc.core.client.v1.QueryConsensusStateRequest"></a>
 
 ### QueryConsensusStateRequest
@@ -2439,6 +2503,7 @@ Query provides defines the gRPC querier service
 | `ClientStates` | [QueryClientStatesRequest](#ibc.core.client.v1.QueryClientStatesRequest) | [QueryClientStatesResponse](#ibc.core.client.v1.QueryClientStatesResponse) | ClientStates queries all the IBC light clients of a chain. | GET|/ibc/core/client/v1/client_states|
 | `ConsensusState` | [QueryConsensusStateRequest](#ibc.core.client.v1.QueryConsensusStateRequest) | [QueryConsensusStateResponse](#ibc.core.client.v1.QueryConsensusStateResponse) | ConsensusState queries a consensus state associated with a client state at a given height. | GET|/ibc/core/client/v1/consensus_states/{client_id}/revision/{revision_number}/height/{revision_height}|
 | `ConsensusStates` | [QueryConsensusStatesRequest](#ibc.core.client.v1.QueryConsensusStatesRequest) | [QueryConsensusStatesResponse](#ibc.core.client.v1.QueryConsensusStatesResponse) | ConsensusStates queries all the consensus state associated with a given client. | GET|/ibc/core/client/v1/consensus_states/{client_id}|
+| `ConsensusStateHeights` | [QueryConsensusStateHeightsRequest](#ibc.core.client.v1.QueryConsensusStateHeightsRequest) | [QueryConsensusStateHeightsResponse](#ibc.core.client.v1.QueryConsensusStateHeightsResponse) | ConsensusStateHeights queries the height of every consensus states associated with a given client. | GET|/ibc/core/client/v1/consensus_states/{client_id}/heights|
 | `ClientStatus` | [QueryClientStatusRequest](#ibc.core.client.v1.QueryClientStatusRequest) | [QueryClientStatusResponse](#ibc.core.client.v1.QueryClientStatusResponse) | Status queries the status of an IBC client. | GET|/ibc/core/client/v1/client_status/{client_id}|
 | `ClientParams` | [QueryClientParamsRequest](#ibc.core.client.v1.QueryClientParamsRequest) | [QueryClientParamsResponse](#ibc.core.client.v1.QueryClientParamsResponse) | ClientParams queries all parameters of the ibc client. | GET|/ibc/client/v1/params|
 | `UpgradedClientState` | [QueryUpgradedClientStateRequest](#ibc.core.client.v1.QueryUpgradedClientStateRequest) | [QueryUpgradedClientStateResponse](#ibc.core.client.v1.QueryUpgradedClientStateResponse) | UpgradedClientState queries an Upgraded IBC light client. | GET|/ibc/core/client/v1/upgraded_client_states|
@@ -2487,14 +2552,13 @@ MsgCreateClientResponse defines the Msg/CreateClient response type.
 ### MsgSubmitMisbehaviour
 MsgSubmitMisbehaviour defines an sdk.Msg type that submits Evidence for
 light client misbehaviour.
-Warning: DEPRECATED
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `client_id` | [string](#string) |  | **Deprecated.** client unique identifier |
-| `misbehaviour` | [google.protobuf.Any](#google.protobuf.Any) |  | **Deprecated.** misbehaviour used for freezing the light client |
-| `signer` | [string](#string) |  | **Deprecated.** signer address |
+| `client_id` | [string](#string) |  | client unique identifier |
+| `misbehaviour` | [google.protobuf.Any](#google.protobuf.Any) |  | misbehaviour used for freezing the light client |
+| `signer` | [string](#string) |  | signer address |
 
 
 
@@ -3265,238 +3329,24 @@ GenesisState defines the ibc module's genesis state.
 
 
 
-<a name="ibc/lightclients/beefy/v1/beefy.proto"></a>
+<a name="ibc/lightclients/localhost/v1/localhost.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## ibc/lightclients/beefy/v1/beefy.proto
+## ibc/lightclients/localhost/v1/localhost.proto
 
 
 
-<a name="ibc.lightclients.beefy.v1.BeefyAuthoritySet"></a>
-
-### BeefyAuthoritySet
-Beefy Authority Info
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `id` | [uint64](#uint64) |  | Id of the authority set, it should be strictly increasing |
-| `len` | [uint32](#uint32) |  | size of the authority set |
-| `authority_root` | [bytes](#bytes) |  | merkle root of the sorted authority public keys. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.BeefyMmrLeaf"></a>
-
-### BeefyMmrLeaf
-BeefyMmrLeaf leaf data
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `version` | [uint32](#uint32) |  | leaf version |
-| `parent_number` | [uint32](#uint32) |  | parent block for this leaf |
-| `parent_hash` | [bytes](#bytes) |  | parent hash for this leaf |
-| `beefy_next_authority_set` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | beefy next authority set. |
-| `parachain_heads` | [bytes](#bytes) |  | merkle root hash of parachain heads included in the leaf. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.BeefyMmrLeafPartial"></a>
-
-### BeefyMmrLeafPartial
-Partial data for MmrLeaf
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `version` | [uint32](#uint32) |  | leaf version |
-| `parent_number` | [uint32](#uint32) |  | parent block for this leaf |
-| `parent_hash` | [bytes](#bytes) |  | parent hash for this leaf |
-| `beefy_next_authority_set` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | next authority set. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.ClientState"></a>
+<a name="ibc.lightclients.localhost.v1.ClientState"></a>
 
 ### ClientState
-ClientState from Beefy tracks the current validator set, latest height,
-and a possible frozen height.
+ClientState defines a loopback (localhost) client. It requires (read-only)
+access to keys outside the client prefix.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `mmr_root_hash` | [bytes](#bytes) |  | Latest mmr root hash |
-| `latest_beefy_height` | [uint32](#uint32) |  | block number for the latest mmr_root_hash |
-| `frozen_height` | [uint64](#uint64) |  | Block height when the client was frozen due to a misbehaviour |
-| `beefy_activation_block` | [uint32](#uint32) |  | block number that the beefy protocol was activated on the relay chain. This should be the first block in the merkle-mountain-range tree. |
-| `authority` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | authorities for the current round |
-| `next_authority_set` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | authorities for the next round |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.Commitment"></a>
-
-### Commitment
-Commitment message signed by beefy validators
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `payload` | [PayloadItem](#ibc.lightclients.beefy.v1.PayloadItem) | repeated | array of payload items signed by Beefy validators |
-| `block_numer` | [uint32](#uint32) |  | block number for this commitment |
-| `validator_set_id` | [uint64](#uint64) |  | validator set that signed this commitment |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.CommitmentSignature"></a>
-
-### CommitmentSignature
-Signature belonging to a single validator
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `signature` | [bytes](#bytes) |  | actual signature bytes |
-| `authority_index` | [uint32](#uint32) |  | authority leaf index in the merkle tree. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.ConsensusState"></a>
-
-### ConsensusState
-ConsensusState defines the consensus state from Tendermint.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `timestamp` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | timestamp that corresponds to the block height in which the ConsensusState was stored. |
-| `root` | [bytes](#bytes) |  | packet commitment root |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.Header"></a>
-
-### Header
-Header contains the neccessary data to proove finality about IBC commitments
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `parachain_headers` | [ParachainHeader](#ibc.lightclients.beefy.v1.ParachainHeader) | repeated | parachain headers needed for proofs and ConsensusState |
-| `mmr_proofs` | [bytes](#bytes) | repeated | mmr proofs for the headers gotten from rpc "mmr_generateProofs" |
-| `mmr_size` | [uint64](#uint64) |  | size of the mmr for the given proof |
-| `mmr_update_proof` | [MmrUpdateProof](#ibc.lightclients.beefy.v1.MmrUpdateProof) |  | optional payload to update the mmr root hash. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.Misbehaviour"></a>
-
-### Misbehaviour
-Misbehaviour is a wrapper over two conflicting Headers
-that implements Misbehaviour interface expected by ICS-02
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `header_1` | [Header](#ibc.lightclients.beefy.v1.Header) |  |  |
-| `header_2` | [Header](#ibc.lightclients.beefy.v1.Header) |  |  |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.MmrUpdateProof"></a>
-
-### MmrUpdateProof
-data needed to update the client
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `mmr_leaf` | [BeefyMmrLeaf](#ibc.lightclients.beefy.v1.BeefyMmrLeaf) |  | the new mmr leaf SCALE encoded. |
-| `mmr_leaf_index` | [uint64](#uint64) |  | leaf index for the mmr_leaf |
-| `mmr_proof` | [bytes](#bytes) | repeated | proof that this mmr_leaf index is valid. |
-| `signed_commitment` | [SignedCommitment](#ibc.lightclients.beefy.v1.SignedCommitment) |  | signed commitment data |
-| `authorities_proof` | [bytes](#bytes) | repeated | generated using full authority list from runtime |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.ParachainHeader"></a>
-
-### ParachainHeader
-data needed to prove parachain header inclusion in mmr.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `parachain_header` | [bytes](#bytes) |  | scale-encoded parachain header bytes |
-| `mmr_leaf_partial` | [BeefyMmrLeafPartial](#ibc.lightclients.beefy.v1.BeefyMmrLeafPartial) |  | reconstructed MmrLeaf, see beefy-go spec |
-| `para_id` | [uint32](#uint32) |  | para_id of the header. |
-| `parachain_heads_proof` | [bytes](#bytes) | repeated | proofs for our header in the parachain heads root |
-| `heads_leaf_index` | [uint32](#uint32) |  | leaf index for parachain heads proof |
-| `heads_total_count` | [uint32](#uint32) |  | total number of para heads in parachain_heads_root |
-| `extrinsic_proof` | [bytes](#bytes) | repeated | trie merkle proof of inclusion in header.extrinsic_root this already encodes the actual extrinsic |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.PayloadItem"></a>
-
-### PayloadItem
-Actual payload items
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `payload_id` | [bytes](#bytes) |  | 2-byte payload id |
-| `payload_data` | [bytes](#bytes) |  | arbitrary length payload data., eg mmr_root_hash |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.SignedCommitment"></a>
-
-### SignedCommitment
-signed commitment data
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `commitment` | [Commitment](#ibc.lightclients.beefy.v1.Commitment) |  | commitment data being signed |
-| `signatures` | [CommitmentSignature](#ibc.lightclients.beefy.v1.CommitmentSignature) | repeated | gotten from rpc subscription |
+| `chain_id` | [string](#string) |  | self chain ID |
+| `height` | [ibc.core.client.v1.Height](#ibc.core.client.v1.Height) |  | self latest block height |
 
 
 
@@ -3986,7 +3836,7 @@ of a sequence and two signatures over different messages at that sequence.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `client_id` | [string](#string) |  | **Deprecated.** ClientID is deprecated |
+| `client_id` | [string](#string) |  |  |
 | `sequence` | [uint64](#uint64) |  |  |
 | `signature_one` | [SignatureAndData](#ibc.lightclients.solomachine.v2.SignatureAndData) |  |  |
 | `signature_two` | [SignatureAndData](#ibc.lightclients.solomachine.v2.SignatureAndData) |  |  |
@@ -4173,8 +4023,8 @@ and a possible frozen height.
 | `latest_height` | [ibc.core.client.v1.Height](#ibc.core.client.v1.Height) |  | Latest height the client was updated to |
 | `proof_specs` | [ics23.ProofSpec](#ics23.ProofSpec) | repeated | Proof specifications used in verifying counterparty state |
 | `upgrade_path` | [string](#string) | repeated | Path at which next upgraded client will be committed. Each element corresponds to the key for a single CommitmentProof in the chained proof. NOTE: ClientState must stored under `{upgradePath}/{upgradeHeight}/clientState` ConsensusState must be stored under `{upgradepath}/{upgradeHeight}/consensusState` For SDK chains using the default upgrade module, upgrade_path should be []string{"upgrade", "upgradedIBCState"}` |
-| `allow_update_after_expiry` | [bool](#bool) |  | This flag, when set to true, will allow governance to recover a client which has expired |
-| `allow_update_after_misbehaviour` | [bool](#bool) |  | This flag, when set to true, will allow governance to unfreeze a client whose chain has experienced a misbehaviour event |
+| `allow_update_after_expiry` | [bool](#bool) |  | **Deprecated.** allow_update_after_expiry is deprecated |
+| `allow_update_after_misbehaviour` | [bool](#bool) |  | **Deprecated.** allow_update_after_misbehaviour is deprecated |
 
 
 
@@ -4253,7 +4103,7 @@ that implements Misbehaviour interface expected by ICS-02
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `client_id` | [string](#string) |  | **Deprecated.** ClientID is deprecated |
+| `client_id` | [string](#string) |  |  |
 | `header_1` | [Header](#ibc.lightclients.tendermint.v1.Header) |  |  |
 | `header_2` | [Header](#ibc.lightclients.tendermint.v1.Header) |  |  |
 

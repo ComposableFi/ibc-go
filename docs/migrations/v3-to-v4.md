@@ -1,4 +1,4 @@
-# Migrating from ibc-go v2 to v3
+# Migrating from ibc-go v3 to v4
 
 This document is intended to highlight significant changes which may require more information than presented in the CHANGELOG.
 Any changes that must be done by a user of ibc-go should be documented here.
@@ -23,8 +23,9 @@ No genesis or in-place migrations required when upgrading from v1 or v2 of ibc-g
 The `WriteAcknowledgement` API now takes the `exported.Acknowledgement` type instead of passing in the acknowledgement byte array directly. 
 This is an API breaking change and as such IBC application developers will have to update any calls to `WriteAcknowledgement`. 
 
-## IBC Light Clients
+The `OnChanOpenInit` application callback has been modified.
+The return signature now includes the application version as detailed in the latest IBC [spec changes](https://github.com/cosmos/ibc/pull/629).
 
-The `VerifyUpgradeAndUpdateState` function has been modified. The client state and consensus state return value has been removed. 
+## Relayers
 
-Light clients **must** set the updated client state and consensus state in the client store after verifying a valid client upgrade.
+When using the `DenomTrace` gRPC, the full IBC denomination with the `ibc/` prefix may now be passed in.

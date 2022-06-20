@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 )
 
-var _ exported.ClientMessage = &Header{}
+var _ exported.Header = &Header{}
 
 // ClientType defines that the Header is a Solo Machine.
 func (Header) ClientType() string {

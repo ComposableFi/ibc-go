@@ -60,7 +60,5 @@ func (cs ClientState) CheckSubstituteAndUpdateState(
 	clientState.ConsensusState = substituteClientState.ConsensusState
 	clientState.IsFrozen = false
 
-	setClientState(subjectClientStore, cdc, clientState)
-
 	return clientState, nil
 }

@@ -7,6 +7,7 @@ import (
 	commitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	localhosttypes "github.com/cosmos/ibc-go/v3/modules/light-clients/09-localhost/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 )
 
@@ -31,6 +32,11 @@ func (suite *TypesTestSuite) TestPackClientState() {
 		{
 			"tendermint client",
 			ibctmtypes.NewClientState(chainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, false, false),
+			true,
+		},
+		{
+			"localhost client",
+			localhosttypes.NewClientState(chainID, clientHeight),
 			true,
 		},
 		{
@@ -110,11 +116,11 @@ func (suite *TypesTestSuite) TestPackConsensusState() {
 	}
 }
 
-func (suite *TypesTestSuite) TestPackClientMessage() {
+func (suite *TypesTestSuite) TestPackHeader() {
 	testCases := []struct {
-		name          string
-		clientMessage exported.ClientMessage
-		expPass       bool
+		name    string
+		header  exported.Header
+		expPass bool
 	}{
 		{
 			"solo machine header",
@@ -136,7 +142,7 @@ func (suite *TypesTestSuite) TestPackClientMessage() {
 	testCasesAny := []caseAny{}
 
 	for _, tc := range testCases {
-		clientAny, err := types.PackClientMessage(tc.clientMessage)
+		clientAny, err := types.PackHeader(tc.header)
 		if tc.expPass {
 			suite.Require().NoError(err, tc.name)
 		} else {
@@ -147,10 +153,57 @@ func (suite *TypesTestSuite) TestPackClientMessage() {
 	}
 
 	for i, tc := range testCasesAny {
-		cs, err := types.UnpackClientMessage(tc.any)
+		cs, err := types.UnpackHeader(tc.any)
 		if tc.expPass {
 			suite.Require().NoError(err, tc.name)
-			suite.Require().Equal(testCases[i].clientMessage, cs, tc.name)
+			suite.Require().Equal(testCases[i].header, cs, tc.name)
+		} else {
+			suite.Require().Error(err, tc.name)
+		}
+	}
+}
+
+func (suite *TypesTestSuite) TestPackMisbehaviour() {
+	testCases := []struct {
+		name         string
+		misbehaviour exported.Misbehaviour
+		expPass      bool
+	}{
+		{
+			"solo machine misbehaviour",
+			ibctesting.NewSolomachine(suite.T(), suite.chainA.Codec, "solomachine", "", 2).CreateMisbehaviour(),
+			true,
+		},
+		{
+			"tendermint misbehaviour",
+			ibctmtypes.NewMisbehaviour("tendermint", suite.chainA.LastHeader, suite.chainA.LastHeader),
+			true,
+		},
+		{
+			"nil",
+			nil,
+			false,
+		},
+	}
+
+	testCasesAny := []caseAny{}
+
+	for _, tc := range testCases {
+		clientAny, err := types.PackMisbehaviour(tc.misbehaviour)
+		if tc.expPass {
+			suite.Require().NoError(err, tc.name)
+		} else {
+			suite.Require().Error(err, tc.name)
+		}
+
+		testCasesAny = append(testCasesAny, caseAny{tc.name, clientAny, tc.expPass})
+	}
+
+	for i, tc := range testCasesAny {
+		cs, err := types.UnpackMisbehaviour(tc.any)
+		if tc.expPass {
+			suite.Require().NoError(err, tc.name)
+			suite.Require().Equal(testCases[i].misbehaviour, cs, tc.name)
 		} else {
 			suite.Require().Error(err, tc.name)
 		}

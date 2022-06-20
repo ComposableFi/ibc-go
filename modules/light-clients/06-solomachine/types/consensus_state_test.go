@@ -11,6 +11,7 @@ func (suite *SoloMachineTestSuite) TestConsensusState() {
 
 	suite.Require().Equal(exported.Solomachine, consensusState.ClientType())
 	suite.Require().Equal(suite.solomachine.Time, consensusState.GetTimestamp())
+	suite.Require().Nil(consensusState.GetRoot())
 }
 
 func (suite *SoloMachineTestSuite) TestConsensusStateValidateBasic() {

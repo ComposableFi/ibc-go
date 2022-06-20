@@ -87,6 +87,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 	}
 
 	// commit state changes for proof verification
+	endpoint.Chain.App.Commit()
 	endpoint.Chain.NextBlock()
 
 	// update port/channel ids
@@ -349,6 +350,7 @@ func (suite *InterchainAccountsTestSuite) TestChanOpenConfirm() {
 	suite.chainB.GetSimApp().GetIBCKeeper().ChannelKeeper.SetChannel(suite.chainB.GetContext(), path.EndpointB.ChannelConfig.PortID, path.EndpointB.ChannelID, channel)
 
 	// commit state changes so proof can be created
+	suite.chainB.App.Commit()
 	suite.chainB.NextBlock()
 
 	path.EndpointA.UpdateClient()
