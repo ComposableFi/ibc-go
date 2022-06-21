@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 )
 
-var _ exported.ClientMessage = &Misbehaviour{}
+var _ exported.Misbehaviour = &Misbehaviour{}
 
 // FrozenHeight Use the same FrozenHeight for all misbehaviour
 var FrozenHeight = clienttypes.NewHeight(0, 1)
@@ -29,6 +29,12 @@ func NewMisbehaviour(clientID string, header1, header2 *Header) *Misbehaviour {
 // ClientType is Tendermint light client
 func (misbehaviour Misbehaviour) ClientType() string {
 	return exported.Beefy
+}
+
+// GetClientID returns the ID of the client that committed a misbehaviour.
+func (misbehaviour Misbehaviour) GetClientID() string {
+	// TODO: Implement
+	return ""
 }
 
 // GetTime returns the timestamp at which misbehaviour occurred. It uses the

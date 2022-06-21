@@ -8,8 +8,10 @@ import (
 
 	"github.com/ChainSafe/gossamer/lib/trie"
 	"github.com/ChainSafe/log15"
+	"github.com/ComposableFi/go-merkle-trees/hasher"
 	"github.com/ComposableFi/go-merkle-trees/merkle"
 	"github.com/ComposableFi/go-merkle-trees/mmr"
+	merkleTypes "github.com/ComposableFi/go-merkle-trees/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -19,29 +21,24 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-type Keccak256 struct{}
-
-func (b Keccak256) Merge(left, right interface{}) interface{} {
-	l := left.([]byte)
-	r := right.([]byte)
-	return crypto.Keccak256(append(l, r...))
-}
-
-func (b Keccak256) Hash(data []byte) ([]byte, error) {
-	return crypto.Keccak256(data), nil
-}
-
-// VerifyClientMessage checks if the clientMessage is of type Header or Misbehaviour and verifies the message
-func (cs *ClientState) VerifyClientMessage(
+// CheckHeaderAndUpdateState checks if the provided header is valid, and if valid it will:
+// TODO: check logic and implement
+func (cs ClientState) CheckHeaderAndUpdateState(
 	ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore,
-	clientMsg exported.ClientMessage,
-) error {
-	switch msg := clientMsg.(type) {
-	case *Header:
-		return cs.verifyHeader(ctx, clientStore, cdc, msg)
-	default:
-		return clienttypes.ErrInvalidClientType
+	header exported.Header,
+) (exported.ClientState, exported.ConsensusState, error) {
+	beefyHeader, ok := header.(*Header)
+	if !ok {
+		return nil, nil, sdkerrors.Wrapf(
+			clienttypes.ErrInvalidHeader, "header type %T, expected  %T", header, &Header{},
+		)
 	}
+
+	if err := cs.verifyHeader(ctx, clientStore, cdc, beefyHeader); err != nil {
+		return nil, nil, err
+	}
+
+	return update(cs, ctx, cdc, clientStore, beefyHeader)
 }
 
 // verifyHeader returns an error if:
@@ -86,7 +83,7 @@ func (cs *ClientState) verifyHeader(
 	commitmentHash := crypto.Keccak256(commitmentBytes)
 
 	// array of leaves in the authority merkle root.
-	var authorityLeaves []merkle.Leaf
+	var authorityLeaves []merkleTypes.Leaf
 
 	for i := 0; i < len(signedCommitment.Signatures); i++ {
 		signature := signedCommitment.Signatures[i]
@@ -98,9 +95,9 @@ func (cs *ClientState) verifyHeader(
 
 		// convert public key to ethereum address.
 		address := crypto.PubkeyToAddress(*pubkey)
-		authorityLeaf := merkle.Leaf{
+		authorityLeaf := merkleTypes.Leaf{
 			Hash:  crypto.Keccak256(address[:]),
-			Index: signature.AuthorityIndex,
+			Index: uint64(signature.AuthorityIndex),
 		}
 		authorityLeaves = append(authorityLeaves, authorityLeaf)
 	}
@@ -114,7 +111,7 @@ func (cs *ClientState) verifyHeader(
 	case cs.Authority.Id:
 		// here we construct a merkle proof, and verify that the public keys which produced this signature
 		// are part of the current round.
-		authoritiesProof := merkle.NewProof(authorityLeaves, authoritiesProof, cs.Authority.Len, Keccak256{})
+		authoritiesProof := merkle.NewProof(authorityLeaves, authoritiesProof, uint64(cs.Authority.Len), hasher.Keccak256Hasher{})
 		valid, err := authoritiesProof.Verify(cs.Authority.AuthorityRoot[:])
 		if err != nil || !valid {
 			return sdkerrors.Wrap(err, ErrAuthoritySetUnknown.Error())
@@ -122,7 +119,7 @@ func (cs *ClientState) verifyHeader(
 
 	// new authority set has kicked in
 	case cs.NextAuthoritySet.Id:
-		authoritiesProof := merkle.NewProof(authorityLeaves, authoritiesProof, cs.NextAuthoritySet.Len, Keccak256{})
+		authoritiesProof := merkle.NewProof(authorityLeaves, authoritiesProof, uint64(cs.NextAuthoritySet.Len), hasher.Keccak256Hasher{})
 		valid, err := authoritiesProof.Verify(cs.NextAuthoritySet.AuthorityRoot[:])
 		if err != nil || !valid {
 			return sdkerrors.Wrap(err, ErrAuthoritySetUnknown.Error())
@@ -145,13 +142,13 @@ func (cs *ClientState) verifyHeader(
 				}
 				// we treat this leaf as the latest leaf in the mmr
 				mmrSize := mmr.LeafIndexToMMRSize(mmrUpdateProof.MmrLeafIndex)
-				mmrLeaves := []mmr.Leaf{
+				mmrLeaves := []merkleTypes.Leaf{
 					{
 						Hash:  crypto.Keccak256(mmrLeafBytes),
 						Index: mmrUpdateProof.MmrLeafIndex,
 					},
 				}
-				mmrProof := mmr.NewProof(mmrSize, mmrUpdateProof.MmrProof, mmrLeaves, Keccak256{})
+				mmrProof := mmr.NewProof(mmrSize, mmrUpdateProof.MmrProof, mmrLeaves, hasher.Keccak256Hasher{})
 				// verify that the leaf is valid, for the signed mmr-root-hash
 				if !mmrProof.Verify(payload.PayloadData[:]) {
 					return sdkerrors.Wrap(err, ErrFailedVerifyMMRLeaf.Error()) // error!, mmr proof is invalid
@@ -192,7 +189,7 @@ func (cs *ClientState) verifyHeader(
 }
 
 func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Proof, error) {
-	var mmrLeaves = make([]mmr.Leaf, len(beefyHeader.ParachainHeaders))
+	var mmrLeaves = make([]merkleTypes.Leaf, len(beefyHeader.ParachainHeaders))
 
 	// verify parachain headers
 	for i := 0; i < len(beefyHeader.ParachainHeaders); i++ {
@@ -203,13 +200,13 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 		binary.LittleEndian.PutUint32(paraIdScale[:], parachainHeader.ParaId)
 		// scale encode to get parachain heads leaf bytes
 		headsLeafBytes := append(paraIdScale, parachainHeader.ParachainHeader...)
-		headsLeaf := []merkle.Leaf{
+		headsLeaf := []merkleTypes.Leaf{
 			{
 				Hash:  crypto.Keccak256(headsLeafBytes),
-				Index: parachainHeader.HeadsLeafIndex,
+				Index: uint64(parachainHeader.HeadsLeafIndex),
 			},
 		}
-		parachainHeadsProof := merkle.NewProof(headsLeaf, parachainHeader.ParachainHeadsProof, parachainHeader.HeadsTotalCount, Keccak256{})
+		parachainHeadsProof := merkle.NewProof(headsLeaf, parachainHeader.ParachainHeadsProof, uint64(parachainHeader.HeadsTotalCount), hasher.Keccak256Hasher{})
 		// todo: merkle.Proof.Root() should return fixed bytes
 		parachainHeadsRoot, err := parachainHeadsProof.Root()
 		// TODO: verify extrinsic root here once trie lib is fixed.
@@ -239,7 +236,7 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 			return nil, sdkerrors.Wrap(err, ErrInvalidMMRLeaf.Error())
 		}
 
-		mmrLeaves[i] = mmr.Leaf{
+		mmrLeaves[i] = merkleTypes.Leaf{
 			Hash: crypto.Keccak256(mmrLeafBytes),
 			// based on our knowledge of the beefy protocol, and the structure of MMRs
 			// we are be able to reconstruct the leaf index of this mmr leaf
@@ -248,15 +245,21 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 		}
 	}
 
-	mmrProof := mmr.NewProof(beefyHeader.MmrSize, beefyHeader.MmrProofs, mmrLeaves, Keccak256{})
+	mmrProof := mmr.NewProof(beefyHeader.MmrSize, beefyHeader.MmrProofs, mmrLeaves, hasher.Keccak256Hasher{})
 
 	return mmrProof, nil
 }
 
-func (cs ClientState) UpdateState(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, clientMsg exported.ClientMessage) error {
-	beefyHeader, ok := clientMsg.(*Header)
+func update(
+	cs ClientState,
+	ctx sdk.Context,
+	cdc codec.BinaryCodec,
+	clientStore sdk.KVStore,
+	header exported.Header,
+) (*ClientState, *ConsensusState, error) {
+	beefyHeader, ok := header.(*Header)
 	if !ok {
-		return sdkerrors.Wrapf(clienttypes.ErrInvalidClientType, "expected type %T, got %T", &Header{}, beefyHeader)
+		return nil, nil, sdkerrors.Wrapf(clienttypes.ErrInvalidClientType, "expected type %T, got %T", &Header{}, beefyHeader)
 	}
 
 	consensusStates := make(map[clienttypes.Height]*ConsensusState)
@@ -266,7 +269,7 @@ func (cs ClientState) UpdateState(ctx sdk.Context, cdc codec.BinaryCodec, client
 		// decode parachain header bytes to struct
 		header, err := DecodeParachainHeader(v.ParachainHeader)
 		if err != nil {
-			return sdkerrors.Wrap(err, "failed to decode parachain header")
+			return nil, nil, sdkerrors.Wrap(err, "failed to decode parachain header")
 		}
 
 		// TODO: IBC should allow height to be generic
@@ -287,14 +290,14 @@ func (cs ClientState) UpdateState(ctx sdk.Context, cdc codec.BinaryCodec, client
 		// that encodes the timestamp extrinsic
 		errr := trieProof.LoadFromProof(v.ExtrinsicProof, header.ExtrinsicsRoot[:])
 		if errr != nil {
-			return sdkerrors.Wrap(err, "failed to load extrinsic proof")
+			return nil, nil, sdkerrors.Wrap(err, "failed to load extrinsic proof")
 		}
 		// the timestamp extrinsic is stored under the key 0u32 in big endian
 		key := make([]byte, 4)
 		timestamp, err := DecodeExtrinsicTimestamp(trieProof.Get(key))
 
 		if err != nil {
-			return sdkerrors.Wrap(err, "failed to decode timestamp extrinsic")
+			return nil, nil, sdkerrors.Wrap(err, "failed to decode timestamp extrinsic")
 		}
 
 		var ibcCommitmentRoot []byte
@@ -327,11 +330,12 @@ func (cs ClientState) UpdateState(ctx sdk.Context, cdc codec.BinaryCodec, client
 
 	setClientState(clientStore, cdc, &cs)
 
-	return nil
+	// TODO: We need a single consensus state
+	return &cs, consensusStates, nil
 }
 
 // CheckForMisbehaviour detects duplicate height misbehaviour and BFT time violation misbehaviour
-func (cs ClientState) CheckForMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, msg exported.ClientMessage) bool {
+func (cs ClientState) CheckForMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, msg exported.Header) bool {
 	switch msg := msg.(type) {
 	case *Header:
 		tmHeader := msg
@@ -406,13 +410,26 @@ func (cs ClientState) GetLeafIndexForBlockNumber(blockNumber uint32) uint32 {
 	return leafIndex
 }
 
+// VerifyClientMessage checks if the clientMessage is of type Header or Misbehaviour and verifies the message
+func (cs *ClientState) VerifyClientMessage(
+	ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore,
+	clientMsg exported.Header,
+) error {
+	switch msg := clientMsg.(type) {
+	case *Header:
+		return cs.verifyHeader(ctx, clientStore, cdc, msg)
+	default:
+		return clienttypes.ErrInvalidClientType
+	}
+}
+
 func authoritiesThreshold(authoritySet BeefyAuthoritySet) uint32 {
 	return 2*authoritySet.Len/3 + 1
 }
 
 // UpdateStateOnMisbehaviour updates state upon misbehaviour, freezing the ClientState. This method should only be called when misbehaviour is detected
 // as it does not perform any misbehaviour checks.
-func (cs ClientState) UpdateStateOnMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, _ exported.ClientMessage) {
+func (cs ClientState) UpdateStateOnMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, _ exported.Header) {
 	//cs.FrozenHeight = FrozenHeight
 
 	clientStore.Set(host.ClientStateKey(), clienttypes.MustMarshalClientState(cdc, &cs))

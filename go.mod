@@ -7,7 +7,7 @@ replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alp
 require (
 	github.com/ChainSafe/gossamer v0.6.1-0.20220406182257-98400b30ca00
 	github.com/ChainSafe/log15 v1.0.0
-	github.com/ComposableFi/go-merkle-trees v0.0.0-20220119155315-3ce250c9ec59
+	github.com/ComposableFi/go-merkle-trees v0.0.0-20220505132313-e976260288cc
 	github.com/ComposableFi/go-substrate-rpc-client/v4 v4.0.1-0.20220520095549-28b7c5a4e212
 	github.com/armon/go-metrics v0.3.10
 	github.com/confio/ics23/go v0.7.0

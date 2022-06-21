@@ -377,7 +377,7 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 				ctx := sdk.Context{}
 				store := k.ClientStore(ctx, "1234")
 
-				err = clientState.UpdateState(sdk.Context{}, nil, store, &header)
+				_, _, err = updateState(sdk.Context{}, nil, store, &header)
 				require.NoError(t, err)
 			}
 

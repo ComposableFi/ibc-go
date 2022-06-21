@@ -3,9 +3,10 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"log"
 	"time"
+
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
 	"github.com/ChainSafe/gossamer/lib/trie"
 	"github.com/ComposableFi/go-substrate-rpc-client/v4/scale"
@@ -14,37 +15,9 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 )
 
-var _ exported.ClientMessage = &Header{}
+var _ exported.Header = &Header{}
 
 const revisionNumber = 0
-
-// DecodeParachainHeader decodes an encoded substrate header to a concrete Header type. It takes encoded bytes
-// as an argument and returns a concrete substrate Header type.
-func DecodeParachainHeader(hb []byte) (substrate.Header, error) {
-	h := substrate.Header{}
-	err := substrate.DecodeFromBytes(hb, &h)
-	if err != nil {
-		return substrate.Header{}, err
-	}
-	return h, nil
-}
-
-// DecodeExtrinsicTimestamp decodes a scale encoded timestamp to a time.Time type
-func DecodeExtrinsicTimestamp(encodedExtrinsic []byte) (time.Time, error) {
-	var extrinsic substrate.Extrinsic
-	decodeErr := substrate.DecodeFromBytes(encodedExtrinsic, &extrinsic)
-	if decodeErr != nil {
-		return time.Time{}, decodeErr
-	}
-
-	unix, unixDecodeErr := scale.NewDecoder(bytes.NewReader(extrinsic.Method.Args[:])).DecodeUintCompact()
-	if unixDecodeErr != nil {
-		return time.Time{}, unixDecodeErr
-	}
-	t := time.UnixMilli(unix.Int64())
-
-	return t, nil
-}
 
 // ConsensusState returns the updated consensus state associated with the header
 func (h Header) ConsensusState() *ConsensusState {
@@ -113,4 +86,32 @@ func (h Header) ValidateBasic() error {
 func (h Header) GetPubKey() (cryptotypes.PubKey, error) {
 	panic("implement me")
 	return nil, nil
+}
+
+// DecodeParachainHeader decodes an encoded substrate header to a concrete Header type. It takes encoded bytes
+// as an argument and returns a concrete substrate Header type.
+func DecodeParachainHeader(hb []byte) (substrate.Header, error) {
+	h := substrate.Header{}
+	err := substrate.DecodeFromBytes(hb, &h)
+	if err != nil {
+		return substrate.Header{}, err
+	}
+	return h, nil
+}
+
+// DecodeExtrinsicTimestamp decodes a scale encoded timestamp to a time.Time type
+func DecodeExtrinsicTimestamp(encodedExtrinsic []byte) (time.Time, error) {
+	var extrinsic substrate.Extrinsic
+	decodeErr := substrate.DecodeFromBytes(encodedExtrinsic, &extrinsic)
+	if decodeErr != nil {
+		return time.Time{}, decodeErr
+	}
+
+	unix, unixDecodeErr := scale.NewDecoder(bytes.NewReader(extrinsic.Method.Args[:])).DecodeUintCompact()
+	if unixDecodeErr != nil {
+		return time.Time{}, unixDecodeErr
+	}
+	t := time.UnixMilli(unix.Int64())
+
+	return t, nil
 }
