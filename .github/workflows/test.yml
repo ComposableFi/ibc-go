@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - feat/add-polkadot-launch-for-tests/andor0
 jobs:
   cleanup-runs:
     runs-on: ubuntu-latest
@@ -15,8 +16,54 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     if: "!startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/main'"
 
+  prepare-test-environment:
+    runs-on: ubuntu-latest
+    container:
+      image: composablefi/ci-linux:2022-04-18
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download a Composable collator
+      run: |
+        cd scripts/polkadot-launch
+        mkdir -p composable/target/release
+        cd composable
+        curl https://github.com/ComposableFi/composable/releases/download/v2.2.1/composable -Lo ./target/release/composable
+        chmod +x target/release/composable
+        ./target/release/composable --version
+
+    - name: Download Polkadot relay chain
+      run: |
+        cd scripts/polkadot-launch
+        mkdir -p polkadot/target/release
+        cd polkadot
+        curl https://github.com/ComposableFi/polkadot/releases/download/v0.9.22/polkadot -Lo ./target/release/polkadot
+        chmod +x target/release/polkadot
+        ./target/release/polkadot --version
+
+    - name: Run polkadot-launch
+      timeout-minutes: 5
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        LOG_FILE: /tmp/polka-launch/polka-launch.log
+      run: |
+        cd scripts/polkadot-launch
+        mkdir -p /tmp/polka-launch
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+        apt update -y
+        apt install -y --no-install-recommends nodejs
+        npm install --global yarn
+
+        yarn
+        yarn composable > "${LOG_FILE}" 2>&1 &
+
+        # wait for polka-launch
+        sleep 240
+
   install-tparse:
     runs-on: ubuntu-latest
+    container:
+      image: composablefi/ci-linux:2022-04-18
     steps:
       - uses: actions/setup-go@v2.1.5
         with:
@@ -33,6 +80,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    container:
+      image: composablefi/ci-linux:2022-04-18
     strategy:
       matrix:
         go-arch: ["amd64", "arm", "arm64"]
@@ -53,6 +102,8 @@ jobs:
 
   split-test-files:
     runs-on: ubuntu-latest
+    container:
+      image: composablefi/ci-linux:2022-04-18
     steps:
       - uses: actions/checkout@v3
       - name: Create a file with all the pkgs
@@ -79,6 +130,8 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    container:
+      image: composablefi/ci-linux:2022-04-18
     needs: split-test-files
     strategy:
       fail-fast: false
@@ -110,6 +163,8 @@ jobs:
 
   upload-coverage-report:
     runs-on: ubuntu-latest
+    container:
+      image: composablefi/ci-linux:2022-04-18
     needs: tests
     steps:
       - uses: actions/checkout@v3
