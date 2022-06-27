@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: composablefi/ci-linux:2022-04-18
-    needs: split-test-files
+    needs: [split-test-files, prepare-test-environment]
     strategy:
       fail-fast: false
       matrix:
