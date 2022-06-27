@@ -3,7 +3,7 @@ package types_test
 import (
 	"context"
 	"encoding/binary"
-	"encoding/hex"
+	// "encoding/hex"
 	"fmt"
 	"os"
 	"sort"
@@ -42,9 +42,9 @@ func bytes32(bytes []byte) [32]byte {
 const PARA_ID = 2000
 
 func TestCheckHeaderAndUpdateState(t *testing.T) {
-	if BEEFY_TEST_MODE != "true" {
-		t.Skip("skipping test in short mode")
-	}
+	// if BEEFY_TEST_MODE != "true" {
+	// 	t.Skip("skipping test in short mode")
+	// }
 	if RPC_CLIENT_ADDRESS == "" {
 		t.Log("==== RPC_CLIENT_ADDRESS not set, will use default ==== ")
 		RPC_CLIENT_ADDRESS = "ws://127.0.0.1:9944"
@@ -364,11 +364,12 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 			err = clientState.VerifyClientMessage(sdk.Context{}, nil, nil, &header)
 			require.NoError(t, err)
 
-			t.Logf("clientState.LatestBeefyHeight: %d clientState.MmrRootHash: %s", clientState.LatestBeefyHeight, hex.EncodeToString(clientState.MmrRootHash))
+			// todo: read client state from store and compare
+			// t.Logf("clientState.LatestBeefyHeight: %d clientState.MmrRootHash: %s", clientState.LatestBeefyHeight, hex.EncodeToString(clientState.MmrRootHash))
 
-			if clientState.LatestBeefyHeight != uint32(signedCommitment.Commitment.BlockNumber) {
-				require.Equal(t, clientState.MmrRootHash, signedCommitment.Commitment.Payload, "failed to update client state. LatestBeefyHeight: %d, Commitment.BlockNumber %d", clientState.LatestBeefyHeight, uint32(signedCommitment.Commitment.BlockNumber))
-			}
+			// if clientState.LatestBeefyHeight != uint32(signedCommitment.Commitment.BlockNumber) {
+			// 	require.Equal(t, clientState.MmrRootHash, signedCommitment.Commitment.Payload, "failed to update client state. LatestBeefyHeight: %d, Commitment.BlockNumber %d", clientState.LatestBeefyHeight, uint32(signedCommitment.Commitment.BlockNumber))
+			// }
 			t.Log("====== successfully processed justification! ======")
 
 			if UPDATE_STATE_MODE == "true" {
