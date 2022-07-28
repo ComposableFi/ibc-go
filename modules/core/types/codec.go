@@ -9,6 +9,7 @@ import (
 	commitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 	solomachinetypes "github.com/cosmos/ibc-go/v3/modules/light-clients/06-solomachine/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	ibcbeefytypes "github.com/cosmos/ibc-go/v3/modules/light-clients/11-beefy/types"
 )
 
 // RegisterInterfaces registers x/ibc interfaces into protobuf Any.
@@ -18,5 +19,6 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	channeltypes.RegisterInterfaces(registry)
 	solomachinetypes.RegisterInterfaces(registry)
 	ibctmtypes.RegisterInterfaces(registry)
+	ibcbeefytypes.RegisterInterfaces(registry)
 	commitmenttypes.RegisterInterfaces(registry)
 }
