@@ -208,7 +208,7 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 		}
 
 		// not a fan of this but its golang
-		var parachainHeads = [32]byte{}
+		var parachainHeads SizedByte32
 		copy(parachainHeads[:], parachainHeadsRoot)
 
 		mmrLeaf := BeefyMmrLeaf{

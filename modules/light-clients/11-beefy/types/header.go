@@ -3,12 +3,12 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
+	"github.com/ChainSafe/gossamer/lib/trie"
 	"log"
 	"time"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
-	"github.com/ChainSafe/gossamer/lib/trie"
 	"github.com/ComposableFi/go-substrate-rpc-client/v4/scale"
 	substrate "github.com/ComposableFi/go-substrate-rpc-client/v4/types"
 	ics02 "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -19,11 +19,23 @@ var _ exported.ClientMessage = &Header{}
 
 const revisionNumber = 0
 
+type Head []byte
+
+type HeadData struct {
+	Head
+}
+
 // DecodeParachainHeader decodes an encoded substrate header to a concrete Header type. It takes encoded bytes
 // as an argument and returns a concrete substrate Header type.
 func DecodeParachainHeader(hb []byte) (substrate.Header, error) {
-	h := substrate.Header{}
-	err := substrate.DecodeFromBytes(hb, &h)
+	var headData HeadData
+	err := substrate.DecodeFromBytes(hb, &headData)
+	if err != nil {
+		return substrate.Header{}, err
+	}
+
+	var h substrate.Header
+	err = substrate.DecodeFromBytes(headData.Head, &h)
 	if err != nil {
 		return substrate.Header{}, err
 	}
@@ -98,10 +110,10 @@ func (h Header) ValidateBasic() error {
 			return err
 		}
 
-		if ext := t.Get(key); len(ext) == 0 {
-			// TODO: error
-			panic("implement me")
-		}
+		//if ext := t.Get(key); len(ext) == 0 {
+		//	// TODO: error
+		//	panic("implement me")
+		//}
 
 		// todo: decode extrinsic.
 	}
