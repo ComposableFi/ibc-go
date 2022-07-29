@@ -140,9 +140,6 @@ message Header {
 
   // optional payload to update the mmr root hash.
   MmrUpdateProof mmr_update_proof = 4 [(gogoproto.nullable) = true];
-
-  // previously finalized block of the relay chain
-  uint64 previously_finalized = 5;
 }
 
 // data needed to prove parachain header inclusion in mmr.

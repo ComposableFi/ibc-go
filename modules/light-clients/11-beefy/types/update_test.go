@@ -33,8 +33,8 @@ var (
 	UPDATE_STATE_MODE  = os.Getenv("UPDATE_STATE_MODE")
 )
 
-func bytes32(bytes []byte) [32]byte {
-	var buffer [32]byte
+func bytes32(bytes []byte) types.SizedByte32 {
+	var buffer types.SizedByte32
 	copy(buffer[:], bytes)
 	return buffer
 }
@@ -274,7 +274,7 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 				header := types.ParachainHeader{
 					ParachainHeader: paraHeaders[PARA_ID],
 					MmrLeafPartial: &types.BeefyMmrLeafPartial{
-						Version:      v.Leaf.Version,
+						Version:      types.U8(v.Leaf.Version),
 						ParentNumber: v.Leaf.ParentNumberAndHash.ParentNumber,
 						ParentHash:   &parentHash,
 						BeefyNextAuthoritySet: types.BeefyAuthoritySet{
@@ -326,12 +326,13 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 			}
 
 			CommitmentPayload := signedCommitment.Commitment.Payload[0]
+			var payloadId types.SizedByte2 = CommitmentPayload.Id
 			ParachainHeads := bytes32(latestLeaf.ParachainHeads[:])
 			leafIndex := clientState.GetLeafIndexForBlockNumber(blockNumber)
 
 			mmrUpdateProof := types.MmrUpdateProof{
 				MmrLeaf: &types.BeefyMmrLeaf{
-					Version:        latestLeaf.Version,
+					Version:        types.U8(latestLeaf.Version),
 					ParentNumber:   latestLeaf.ParentNumberAndHash.ParentNumber,
 					ParentHash:     &parentHash,
 					ParachainHeads: &ParachainHeads,
@@ -345,7 +346,7 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 				MmrProof:     latestLeafMmrProof,
 				SignedCommitment: &types.SignedCommitment{
 					Commitment: &types.Commitment{
-						Payload:        []*types.PayloadItem{{PayloadId: &CommitmentPayload.Id, PayloadData: CommitmentPayload.Value}},
+						Payload:        []*types.PayloadItem{{PayloadId: &payloadId, PayloadData: CommitmentPayload.Value}},
 						BlockNumer:     uint32(signedCommitment.Commitment.BlockNumber),
 						ValidatorSetId: uint64(signedCommitment.Commitment.ValidatorSetID),
 					},
