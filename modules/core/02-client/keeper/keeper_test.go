@@ -19,8 +19,8 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	commitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
-	solomachinetypes "github.com/cosmos/ibc-go/v3/modules/light-clients/06-solomachine/types"
-	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	solomachinetypes "github.com/cosmos/ibc-go/v3/modules/light-clients/06-solomachine"
+	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	ibctestingmock "github.com/cosmos/ibc-go/v3/testing/mock"
 	"github.com/cosmos/ibc-go/v3/testing/simapp"
@@ -44,7 +44,6 @@ const (
 var (
 	testClientHeight          = types.NewHeight(0, 5)
 	testClientHeightRevision1 = types.NewHeight(1, 5)
-	newClientHeight           = types.NewHeight(1, 1)
 )
 
 type KeeperTestSuite struct {
@@ -66,7 +65,8 @@ type KeeperTestSuite struct {
 	now            time.Time
 	past           time.Time
 	solomachine    *ibctesting.Solomachine
-	signers        map[string]tmtypes.PrivValidator
+
+	signers map[string]tmtypes.PrivValidator
 
 	// TODO: deprecate
 	queryClient types.QueryClient
@@ -155,7 +155,8 @@ func (suite *KeeperTestSuite) TestSetClientConsensusState() {
 }
 
 func (suite *KeeperTestSuite) TestValidateSelfClient() {
-	testClientHeight := types.NewHeight(0, uint64(suite.chainA.GetContext().BlockHeight()-1))
+	testClientHeight := types.GetSelfHeight(suite.chainA.GetContext())
+	testClientHeight.RevisionHeight--
 
 	testCases := []struct {
 		name        string
@@ -184,7 +185,7 @@ func (suite *KeeperTestSuite) TestValidateSelfClient() {
 		},
 		{
 			"invalid client height",
-			ibctmtypes.NewClientState(suite.chainA.ChainID, ibctmtypes.DefaultTrustLevel, trustingPeriod, ubdPeriod, maxClockDrift, types.NewHeight(0, uint64(suite.chainA.GetContext().BlockHeight())), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, false, false),
+			ibctmtypes.NewClientState(suite.chainA.ChainID, ibctmtypes.DefaultTrustLevel, trustingPeriod, ubdPeriod, maxClockDrift, types.GetSelfHeight(suite.chainA.GetContext()).Increment().(types.Height), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, false, false),
 			false,
 		},
 		{

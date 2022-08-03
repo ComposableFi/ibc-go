@@ -9,8 +9,8 @@ import (
 
 	"github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	commitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
-	solomachinetypes "github.com/cosmos/ibc-go/v3/modules/light-clients/06-solomachine/types"
-	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	solomachinetypes "github.com/cosmos/ibc-go/v3/modules/light-clients/06-solomachine"
+	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 )
 
@@ -204,7 +204,7 @@ func (suite *TypesTestSuite) TestMarshalMsgUpdateClient() {
 		{
 			"solo machine client", func() {
 				soloMachine := ibctesting.NewSolomachine(suite.T(), suite.chainA.Codec, "solomachine", "", 2)
-				msg, err = types.NewMsgUpdateClient(soloMachine.ClientID, soloMachine.CreateHeader(), suite.chainA.SenderAccount.GetAddress().String())
+				msg, err = types.NewMsgUpdateClient(soloMachine.ClientID, soloMachine.CreateHeader(soloMachine.Diversifier), suite.chainA.SenderAccount.GetAddress().String())
 				suite.Require().NoError(err)
 			},
 		},
@@ -278,7 +278,7 @@ func (suite *TypesTestSuite) TestMsgUpdateClient_ValidateBasic() {
 		{
 			"failed to unpack header",
 			func() {
-				msg.Header = nil
+				msg.ClientMessage = nil
 			},
 			false,
 		},
@@ -293,7 +293,8 @@ func (suite *TypesTestSuite) TestMsgUpdateClient_ValidateBasic() {
 			"valid - solomachine header",
 			func() {
 				soloMachine := ibctesting.NewSolomachine(suite.T(), suite.chainA.Codec, "solomachine", "", 2)
-				msg, err = types.NewMsgUpdateClient(soloMachine.ClientID, soloMachine.CreateHeader(), suite.chainA.SenderAccount.GetAddress().String())
+				msg, err = types.NewMsgUpdateClient(soloMachine.ClientID, soloMachine.CreateHeader(soloMachine.Diversifier), suite.chainA.SenderAccount.GetAddress().String())
+
 				suite.Require().NoError(err)
 			},
 			true,

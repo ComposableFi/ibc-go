@@ -15,7 +15,7 @@ import (
 	commitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 	"github.com/cosmos/ibc-go/v3/modules/core/types"
-	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/cosmos/ibc-go/v3/testing/simapp"
 )
@@ -33,7 +33,7 @@ const (
 	channel2 = "channel-1"
 )
 
-var clientHeight = clienttypes.NewHeight(0, 10)
+var clientHeight = clienttypes.NewHeight(1, 10)
 
 type IBCTestSuite struct {
 	suite.Suite

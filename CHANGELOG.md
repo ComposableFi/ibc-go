@@ -38,26 +38,54 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Dependencies
 
+* [\#1247](https://github.com/cosmos/ibc-go/pull/1247) Bump SDK version to v0.45.3 and Tendermint to version 0.34.19
+
 ### API Breaking
+
+* (transfer) [\#1250](https://github.com/cosmos/ibc-go/pull/1250) Deprecate `GetTransferAccount` since the `transfer` module account is never used.
+* (06-solomachine) [\#1679](https://github.com/cosmos/ibc-go/pull/1679) Remove `types` sub-package from `06-solomachine` lightclient directory. 
+* (07-tendermint) [\#1677](https://github.com/cosmos/ibc-go/pull/1677) Remove `types` sub-package from `07-tendermint` lightclient directory. 
+* (06-solomachine) [\#1687](https://github.com/cosmos/ibc-go/pull/1687) Bump `06-solomachine` protobuf version from `v2` to `v3`.
+* (06-solomachine) [\#1687](https://github.com/cosmos/ibc-go/pull/1687) Removed `DataType` enum and associated message types from `06-solomachine`. `DataType` has been removed from `SignBytes` and `SignatureAndData` in favour of `path`.
 
 ### State Machine Breaking
 
 ### Improvements
 
-* (02-client) [\#1208](https://github.com/cosmos/ibc-go/pull/1208) Replace `CheckHeaderAndUpdateState` usage in 02-client with calls to `VerifyClientMessage`, `CheckForMisbehaviour`, `UpdateStateOnMisbehaviour` and `UpdateState`. 
-* (modules/light-clients/09-localhost) [\#1187](https://github.com/cosmos/ibc-go/pull/1187/) Removing localhost light client implementation as it is not functional. 
+* (middleware) [\#1022](https://github.com/cosmos/ibc-go/pull/1022) Add `GetAppVersion` to the ICS4Wrapper interface. This function should be used by IBC applications to obtain their own version since the version set in the channel structure may be wrapped many times by middleware. 
+* (modules/core/04-channel) [\#1160](https://github.com/cosmos/ibc-go/pull/1160) Improve `uint64 -> string` performance in `Logger`.
+* (modules/core/04-channel) [\#1232](https://github.com/cosmos/ibc-go/pull/1232) Updating params on `NewPacketId` and moving to bottom of file. 
+* (modules/core/04-channel) [\#1279](https://github.com/cosmos/ibc-go/pull/1279) Add selected channel version to MsgChanOpenInitResponse and MsgChanOpenTryResponse. Emit channel version during OpenInit/OpenTry
+* (modules/light-clients/07-tendermint) [\#1118](https://github.com/cosmos/ibc-go/pull/1118) Deprecating `AllowUpdateAfterExpiry and AllowUpdateAfterMisbehaviour`. See ADR-026 for context.
+* (modules/core/02-client) [\#1188](https://github.com/cosmos/ibc-go/pull/1188/files) Routing `MsgSubmitMisbehaviour` to `UpdateClient` keeper function. Deprecating `SubmitMisbehaviour` endpoint.
+* (modules/core/02-client) [\#1208](https://github.com/cosmos/ibc-go/pull/1208) Replace `CheckHeaderAndUpdateState` usage in 02-client with calls to `VerifyClientMessage`, `CheckForMisbehaviour`, `UpdateStateOnMisbehaviour` and `UpdateState`. 
+* (modules/light-clients/09-localhost) [\#1187](https://github.com/cosmos/ibc-go/pull/1187/) Removing localhost light client implementation as it is not functional. An upgrade handler is provided in `modules/migrations/v5` to prune `09-localhost` clients and consensus states from the store.
 * [\#1186](https://github.com/cosmos/ibc-go/pull/1186/files) Removing `GetRoot` function from ConsensusState interface in `02-client`. `GetRoot` is unused by core IBC. 
 * (modules/core/02-client) [\#1196](https://github.com/cosmos/ibc-go/pull/1196) Adding VerifyClientMessage to ClientState interface. 
 * (modules/core/02-client) [\#1198](https://github.com/cosmos/ibc-go/pull/1198) Adding UpdateStateOnMisbehaviour to ClientState interface. 
 * (modules/core/02-client) [\#1170](https://github.com/cosmos/ibc-go/pull/1170) Updating `ClientUpdateProposal` to set client state in lightclient implementations `CheckSubstituteAndUpdateState` methods.
 * (modules/core/02-client) [\#1197](https://github.com/cosmos/ibc-go/pull/1197) Adding `CheckForMisbehaviour` to `ClientState` interface. 
+* (modules/core/02-client) [\#1195](https://github.com/cosmos/ibc-go/pull/1210) Removing `CheckHeaderAndUpdateState` from `ClientState` interface & associated light client implementations. 
+* (modules/core/02-client) [\#1189](https://github.com/cosmos/ibc-go/pull/1212) Removing `CheckMisbehaviourAndUpdateState` from `ClientState` interface & associated light client implementations.
 * (modules/core/exported) [\#1206](https://github.com/cosmos/ibc-go/pull/1206) Adding new method `UpdateState` to `ClientState` interface.
+* (testing) [\#1302](https://github.com/cosmos/ibc-go/pull/1302) Change testchain default behaviour to use a chainID in the revision format. Set `ChainIDSuffix` to an empty string to disable this functionality.
+* (modules/core/02-client) [\#1741](https://github.com/cosmos/ibc-go/pull/1741) Emitting a new `upgrade_chain` event upon setting upgrade consensus state.
 
 ### Features
 
+* [\#276](https://github.com/cosmos/ibc-go/pull/276) Adding the Fee Middleware module v1
+* (apps/29-fee) [\#1229](https://github.com/cosmos/ibc-go/pull/1229) Adding CLI commands for getting all unrelayed incentivized packets and packet by packet-id. 
+* (apps/29-fee) [\#1224](https://github.com/cosmos/ibc-go/pull/1224) Adding Query/CounterpartyAddress and CLI to ICS29 fee middleware
+* (apps/29-fee) [\#1225](https://github.com/cosmos/ibc-go/pull/1225) Adding Query/FeeEnabledChannel and Query/FeeEnabledChannels with CLIs to ICS29 fee middleware.
+* (modules/apps/29-fee) [\#1230](https://github.com/cosmos/ibc-go/pull/1230) Adding CLI command for getting incentivized packets for a specific channel-id. 
+
 ### Bug Fixes
 
+* (light-clients/solomachine) [#1839](https://github.com/cosmos/ibc-go/issues/1839) Fixed usage of the new diversifier in validation of changing diversifiers for the solo machine. The current diversifier must sign over the new diversifier.
 * (modules/core/04-channel) [\#1130](https://github.com/cosmos/ibc-go/pull/1130) Call `packet.GetSequence()` rather than passing func in `WriteAcknowledgement` log output
+* (apps/29-fee) [\#1278](https://github.com/cosmos/ibc-go/pull/1278) The URI path for the query to get all incentivized packets for a specifc channel did not follow the same format as the rest of queries.
+* (07-tendermint) [\#1674](https://github.com/cosmos/ibc-go/pull/1674) Submitted ClientState is zeroed out before checking the proof in order to prevent the proposal from containing information governance is not actually voting on.
+* (modules/core/02-client)[\#1676](https://github.com/cosmos/ibc-go/pull/1676) ClientState must be zeroed out for `UpgradeProposals` to pass validation. This prevents a proposal containing information governance is not actually voting on.
 
 ## [v3.0.0](https://github.com/cosmos/ibc-go/releases/tag/v3.0.0) - 2022-03-15
 
@@ -101,6 +129,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Improvements
 
+* (client) [\#888](https://github.com/cosmos/ibc-go/pull/888) Add `GetTimestampAtHeight` to `ClientState`
 * (interchain-accounts) [\#1037](https://github.com/cosmos/ibc-go/pull/1037) Add a function `InitModule` to the interchain accounts `AppModule`. This function should be called within the upgrade handler when adding the interchain accounts module to a chain. It should be called in place of InitGenesis (set the consensus version in the version map).
 * (testing) [\#1003](https://github.com/cosmos/ibc-go/pull/1003) Testing chain's `Signer` fields has changed from `[]tmtypes.PrivValidator` to `map[string]tmtypes.PrivValidator` to accomodate valset updates changing the order of the ValidatorSet.
 * (testing) [\#1003](https://github.com/cosmos/ibc-go/pull/1003) `SignAndDeliver` will now just deliver the transaction without creating and committing a block. Thus, it requires that `BeginBlock` MUST be called before `SignAndDeliver`

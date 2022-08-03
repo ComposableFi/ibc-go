@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"encoding/hex"
-
 	"github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,7 +25,6 @@ func (k Keeper) CreateClient(
 
 	clientID := k.GenerateClientIdentifier(ctx, clientState.ClientType())
 
-	k.SetClientState(ctx, clientID, clientState)
 	k.Logger(ctx).Info("client created at height", "client-id", clientID, "height", clientState.GetLatestHeight().String())
 
 	// verifies initial consensus state against client state and initializes client store with any client-specific metadata
@@ -36,17 +33,16 @@ func (k Keeper) CreateClient(
 		return "", err
 	}
 
+	k.SetClientState(ctx, clientID, clientState)
 	k.SetClientConsensusState(ctx, clientID, clientState.GetLatestHeight(), consensusState)
 
 	k.Logger(ctx).Info("client created at height", "client-id", clientID, "height", clientState.GetLatestHeight().String())
 
-	defer func() {
-		telemetry.IncrCounterWithLabels(
-			[]string{"ibc", "client", "create"},
-			1,
-			[]metrics.Label{telemetry.NewLabel(types.LabelClientType, clientState.ClientType())},
-		)
-	}()
+	defer telemetry.IncrCounterWithLabels(
+		[]string{"ibc", "client", "create"},
+		1,
+		[]metrics.Label{telemetry.NewLabel(types.LabelClientType, clientState.ClientType())},
+	)
 
 	EmitCreateClientEvent(ctx, clientID, clientState)
 
@@ -63,20 +59,12 @@ func (k Keeper) UpdateClient(ctx sdk.Context, clientID string, clientMsg exporte
 	clientStore := k.ClientStore(ctx, clientID)
 
 	if status := clientState.Status(ctx, clientStore, k.cdc); status != exported.Active {
-		return sdkerrors.Wrapf(types.ErrClientNotActive, "cannot update client (%s) with status %s", clientID, status)
+		return sdkerrors.Wrapf(types.ErrClientStateNotFound, "cannot update client (%s) with status %s", clientID, status)
 	}
 
 	if err := clientState.VerifyClientMessage(ctx, k.cdc, clientStore, clientMsg); err != nil {
 		return err
 	}
-
-	// Marshal the ClientMessage as an Any and encode the resulting bytes to hex.
-	// This prevents the event value from containing invalid UTF-8 characters
-	// which may cause data to be lost when JSON encoding/decoding.
-	clientMsgStr := hex.EncodeToString(types.MustMarshalClientMessage(k.cdc, clientMsg))
-
-	// set default consensus height with header height
-	consensusHeight := clientMsg.GetHeight()
 
 	foundMisbehaviour := clientState.CheckForMisbehaviour(ctx, k.cdc, clientStore, clientMsg)
 	if foundMisbehaviour {
@@ -84,41 +72,37 @@ func (k Keeper) UpdateClient(ctx sdk.Context, clientID string, clientMsg exporte
 
 		k.Logger(ctx).Info("client frozen due to misbehaviour", "client-id", clientID)
 
-		defer func() {
-			telemetry.IncrCounterWithLabels(
-				[]string{"ibc", "client", "misbehaviour"},
-				1,
-				[]metrics.Label{
-					telemetry.NewLabel(types.LabelClientType, clientState.ClientType()),
-					telemetry.NewLabel(types.LabelClientID, clientID),
-					telemetry.NewLabel(types.LabelMsgType, "update"),
-				},
-			)
-		}()
-
-		EmitSubmitMisbehaviourEventOnUpdate(ctx, clientID, clientState.ClientType(), consensusHeight, clientMsgStr)
-
-		return nil
-	}
-
-	clientState.UpdateState(ctx, k.cdc, clientStore, clientMsg)
-
-	k.Logger(ctx).Info("client state updated", "client-id", clientID, "height", consensusHeight.String())
-
-	defer func() {
-		telemetry.IncrCounterWithLabels(
-			[]string{"ibc", "client", "update"},
+		defer telemetry.IncrCounterWithLabels(
+			[]string{"ibc", "client", "misbehaviour"},
 			1,
 			[]metrics.Label{
 				telemetry.NewLabel(types.LabelClientType, clientState.ClientType()),
 				telemetry.NewLabel(types.LabelClientID, clientID),
-				telemetry.NewLabel(types.LabelUpdateType, "msg"),
+				telemetry.NewLabel(types.LabelMsgType, "update"),
 			},
 		)
-	}()
+
+		EmitSubmitMisbehaviourEvent(ctx, clientID, clientState)
+
+		return nil
+	}
+
+	consensusHeights := clientState.UpdateState(ctx, k.cdc, clientStore, clientMsg)
+
+	k.Logger(ctx).Info("client state updated", "client-id", clientID, "heights", consensusHeights)
+
+	defer telemetry.IncrCounterWithLabels(
+		[]string{"ibc", "client", "update"},
+		1,
+		[]metrics.Label{
+			telemetry.NewLabel(types.LabelClientType, clientState.ClientType()),
+			telemetry.NewLabel(types.LabelClientID, clientID),
+			telemetry.NewLabel(types.LabelUpdateType, "msg"),
+		},
+	)
 
 	// emitting events in the keeper emits for both begin block and handler client updates
-	EmitUpdateClientEvent(ctx, clientID, clientState.ClientType(), consensusHeight, clientMsgStr)
+	EmitUpdateClientEvent(ctx, clientID, clientState.ClientType(), consensusHeights, k.cdc, clientMsg)
 
 	return nil
 }
@@ -135,7 +119,7 @@ func (k Keeper) UpgradeClient(ctx sdk.Context, clientID string, upgradedClient e
 	clientStore := k.ClientStore(ctx, clientID)
 
 	if status := clientState.Status(ctx, clientStore, k.cdc); status != exported.Active {
-		return sdkerrors.Wrapf(types.ErrClientNotActive, "cannot upgrade client (%s) with status %s", clientID, status)
+		return sdkerrors.Wrapf(types.ErrClientStateNotFound, "cannot upgrade client (%s) with status %s", clientID, status)
 	}
 
 	if err := clientState.VerifyUpgradeAndUpdateState(ctx, k.cdc, clientStore,
@@ -146,60 +130,16 @@ func (k Keeper) UpgradeClient(ctx sdk.Context, clientID string, upgradedClient e
 
 	k.Logger(ctx).Info("client state upgraded", "client-id", clientID, "height", upgradedClient.GetLatestHeight().String())
 
-	defer func() {
-		telemetry.IncrCounterWithLabels(
-			[]string{"ibc", "client", "upgrade"},
-			1,
-			[]metrics.Label{
-				telemetry.NewLabel(types.LabelClientType, upgradedClient.ClientType()),
-				telemetry.NewLabel(types.LabelClientID, clientID),
-			},
-		)
-	}()
+	defer telemetry.IncrCounterWithLabels(
+		[]string{"ibc", "client", "upgrade"},
+		1,
+		[]metrics.Label{
+			telemetry.NewLabel(types.LabelClientType, upgradedClient.ClientType()),
+			telemetry.NewLabel(types.LabelClientID, clientID),
+		},
+	)
 
 	EmitUpgradeClientEvent(ctx, clientID, upgradedClient)
-
-	return nil
-}
-
-// CheckMisbehaviourAndUpdateState checks for client misbehaviour and freezes the
-// client if so.
-func (k Keeper) CheckMisbehaviourAndUpdateState(ctx sdk.Context, clientID string, misbehaviour exported.ClientMessage) error {
-	clientState, found := k.GetClientState(ctx, clientID)
-	if !found {
-		return sdkerrors.Wrapf(types.ErrClientNotFound, "cannot check misbehaviour for client with ID %s", clientID)
-	}
-
-	clientStore := k.ClientStore(ctx, clientID)
-
-	if status := clientState.Status(ctx, clientStore, k.cdc); status != exported.Active {
-		return sdkerrors.Wrapf(types.ErrClientNotActive, "cannot process misbehaviour for client (%s) with status %s", clientID, status)
-	}
-
-	if err := misbehaviour.ValidateBasic(); err != nil {
-		return err
-	}
-
-	clientState, err := clientState.CheckMisbehaviourAndUpdateState(ctx, k.cdc, clientStore, misbehaviour)
-	if err != nil {
-		return err
-	}
-
-	k.SetClientState(ctx, clientID, clientState)
-	k.Logger(ctx).Info("client frozen due to misbehaviour", "client-id", clientID)
-
-	defer func() {
-		telemetry.IncrCounterWithLabels(
-			[]string{"ibc", "client", "misbehaviour"},
-			1,
-			[]metrics.Label{
-				telemetry.NewLabel(types.LabelClientType, misbehaviour.ClientType()),
-				telemetry.NewLabel(types.LabelClientID, clientID),
-			},
-		)
-	}()
-
-	EmitSubmitMisbehaviourEvent(ctx, clientID, clientState)
 
 	return nil
 }

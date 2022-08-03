@@ -108,7 +108,7 @@ func (cs *ClientState) VerifyClientMessage(
 }
 
 // UpdateState panis!
-func (cs *ClientState) UpdateState(_ sdk.Context, _ codec.BinaryCodec, _ sdk.KVStore, _ exported.ClientMessage) error {
+func (cs *ClientState) UpdateState(_ sdk.Context, _ codec.BinaryCodec, _ sdk.KVStore, _ exported.ClientMessage) []exported.Height {
 	panic("legacy solo machine is deprecated!")
 }
 
@@ -209,6 +209,42 @@ func (cs ClientState) VerifyNextSequenceRecv(
 	string, string, uint64,
 ) error {
 	panic("legacy solo machine is deprecated!")
+}
+
+// GetTimestampAtHeight panics!
+func (cs ClientState) GetTimestampAtHeight(
+	sdk.Context, sdk.KVStore, codec.BinaryCodec, exported.Height,
+) (uint64, error) {
+	panic("legacy solo machine is deprecated!")
+}
+
+// VerifyMembership panics!
+func (cs *ClientState) VerifyMembership(
+	ctx sdk.Context,
+	clientStore sdk.KVStore,
+	cdc codec.BinaryCodec,
+	height exported.Height,
+	delayTimePeriod uint64,
+	delayBlockPeriod uint64,
+	proof []byte,
+	path []byte,
+	value []byte,
+) error {
+	panic("legacy solo machine is deprecated!")
+}
+
+// VerifyNonMembership panics!
+func (cs *ClientState) VerifyNonMembership(
+	ctx sdk.Context,
+	clientStore sdk.KVStore,
+	cdc codec.BinaryCodec,
+	height exported.Height,
+	delayTimePeriod uint64,
+	delayBlockPeriod uint64,
+	proof []byte,
+	path []byte,
+) error {
+	panic("legacy solo machine is deprecated")
 }
 
 // ClientType panics!
