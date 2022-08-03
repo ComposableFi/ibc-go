@@ -9,8 +9,6 @@ import (
 	"sort"
 	"testing"
 
-	types2 "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/ibc-go/v3/modules/core/02-client/keeper"
 
 	"github.com/stretchr/testify/require"
 
@@ -39,12 +37,12 @@ func bytes32(bytes []byte) types.SizedByte32 {
 	return buffer
 }
 
-const PARA_ID = 2000
+const PARA_ID uint32 = 2000
 
 func TestCheckHeaderAndUpdateState(t *testing.T) {
-	if BEEFY_TEST_MODE != "true" {
-		t.Skip("skipping test in short mode")
-	}
+	// if BEEFY_TEST_MODE != "true" {
+	// 	t.Skip("skipping test in short mode")
+	// }
 	if RPC_CLIENT_ADDRESS == "" {
 		t.Log("==== RPC_CLIENT_ADDRESS not set, will use default ==== ")
 		RPC_CLIENT_ADDRESS = "ws://127.0.0.1:9944"
@@ -151,7 +149,6 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 			t.Logf("Recieved Commitment #%d", count)
 
 			// first get all paraIds
-
 			// fetch all registered parachainIds, this method doesn't account for
 			// if the parachains whose header was included in the batch of finalized blocks have now
 			// lost their parachain slot at this height
@@ -160,19 +157,17 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 
 			var paraHeaderKeys []clientTypes.StorageKey
 
-			// create full storage key for each known paraId.
+			// create full storage key for our own paraId
 			keyPrefix := clientTypes.CreateStorageKeyPrefix("Paras", "Heads")
 			// so we can query all blocks from lastfinalized to latestBeefyHeight
-			for _, paraId := range paraIds {
-				encodedParaID, err := types.Encode(paraId)
-				require.NoError(t, err)
+			encodedParaID, err := types.Encode(PARA_ID)
+			require.NoError(t, err)
 
-				twoXHash := xxhash.New64(encodedParaID).Sum(nil)
-				// full key path in the storage source: https://www.shawntabrizi.com/assets/presentations/substrate-storage-deep-dive.pdf
-				// xx128("Paras") + xx128("Heads") + xx64(Encode(paraId)) + Encode(paraId)
-				fullKey := append(append(keyPrefix, twoXHash[:]...), encodedParaID...)
-				paraHeaderKeys = append(paraHeaderKeys, fullKey)
-			}
+			twoXHash := xxhash.New64(encodedParaID).Sum(nil)
+			// full key path in the storage source: https://www.shawntabrizi.com/assets/presentations/substrate-storage-deep-dive.pdf
+			// xx128("Paras") + xx128("Heads") + xx64(Encode(paraId)) + Encode(paraId)
+			fullKey := append(append(keyPrefix, twoXHash[:]...), encodedParaID...)
+			paraHeaderKeys = append(paraHeaderKeys, fullKey)
 
 			previousFinalizedHash, err := relayApi.RPC.Chain.GetBlockHash(uint64(clientState.LatestBeefyHeight + 1))
 			require.NoError(t, err)
@@ -195,19 +190,10 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 
 				var heads = make(map[uint32][]byte)
 
-				for _, keyValue := range changes.Changes {
-					if keyValue.HasStorageData {
-						var paraId uint32
-						err := types.DecodeFromBytes(keyValue.StorageKey[40:], &paraId)
-						require.NoError(t, err)
-
-						heads[paraId] = keyValue.StorageData
-					}
-				}
-
-				// check if heads has target id, else skip
-				if heads[PARA_ID] == nil {
-					continue
+				for _, paraId := range paraIds {
+					header, err := fetchParachainHeader(relayApi, paraId, changes.Block)
+					require.NoError(t, err)
+					heads[paraId] = header
 				}
 
 				finalizedBlocks[uint32(header.Number)] = heads
@@ -221,8 +207,6 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 
 			var parachainHeaders []*types.ParachainHeader
 
-			var paraHeads = make([][]byte, len(mmrBatchProof.Leaves))
-
 			for i := 0; i < len(mmrBatchProof.Leaves); i++ {
 				type LeafWithIndex struct {
 					Leaf  clientTypes.MmrLeaf
@@ -230,7 +214,6 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 				}
 
 				v := LeafWithIndex{Leaf: mmrBatchProof.Leaves[i], Index: uint64(mmrBatchProof.Proof.LeafIndex[i])}
-				paraHeads[i] = v.Leaf.ParachainHeads[:]
 				var leafBlockNumber = clientState.GetBlockNumberForLeaf(uint32(v.Index))
 				paraHeaders := finalizedBlocks[leafBlockNumber]
 
@@ -250,12 +233,16 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 					return sortedParaIds[i] < sortedParaIds[j]
 				})
 
+				type ParaIdAndHeader struct {
+					ParaId uint32
+					Header []byte
+				}
+
 				for _, paraId := range sortedParaIds {
-					paraIdScale := make([]byte, 4)
-					// scale encode para_id
-					binary.LittleEndian.PutUint32(paraIdScale[:], paraId)
-					leaf := append(paraIdScale, paraHeaders[paraId]...)
-					paraHeadsLeaves = append(paraHeadsLeaves, crypto.Keccak256(leaf))
+					bytes, err := types.Encode(ParaIdAndHeader{ParaId: paraId, Header: paraHeaders[paraId]})
+					require.NoError(t, err)
+					leafHash := crypto.Keccak256(bytes)
+					paraHeadsLeaves = append(paraHeadsLeaves, leafHash)
 					if paraId == PARA_ID {
 						// note index of paraId
 						index = uint32(count)
@@ -371,16 +358,16 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 			}
 			t.Log("====== successfully processed justification! ======")
 
-			if UPDATE_STATE_MODE == "true" {
-				paramSpace := types2.NewSubspace(nil, nil, nil, nil, "test")
-				//paramSpace = paramSpace.WithKeyTable(clientypes.ParamKeyTable())
+			// if UPDATE_STATE_MODE == "true" {
+			// 	paramSpace := types2.NewSubspace(nil, nil, nil, nil, "test")
+			// 	//paramSpace = paramSpace.WithKeyTable(clientypes.ParamKeyTable())
 
-				k := keeper.NewKeeper(nil, nil, paramSpace, nil, nil)
-				ctx := sdk.Context{}
-				store := k.ClientStore(ctx, "1234")
+			// 	k := keeper.NewKeeper(nil, nil, paramSpace, nil, nil)
+			// 	ctx := sdk.Context{}
+			// 	store := k.ClientStore(ctx, "1234")
 
-				clientState.UpdateState(sdk.Context{}, nil, store, &header)
-			}
+			// 	clientState.UpdateState(sdk.Context{}, nil, store, &header)
+			// }
 
 			// TODO: assert that the consensus states were actually persisted
 			// TODO: tests against invalid proofs and consensus states
@@ -430,6 +417,36 @@ func BeefyAuthorities(blockNumber uint32, conn *client.SubstrateAPI, method stri
 	}
 
 	return authorityEthereumAddresses, nil
+}
+
+func fetchParachainHeader(conn *client.SubstrateAPI, paraId uint32, blockHash clientTypes.Hash) ([]byte, error) {
+	// Fetch metadata
+	meta, err := conn.RPC.State.GetMetadataLatest()
+	if err != nil {
+		return nil, err
+	}
+
+	paraIdEncoded := make([]byte, 4)
+	binary.LittleEndian.PutUint32(paraIdEncoded, paraId)
+
+	storageKey, err := clientTypes.CreateStorageKey(meta, "Paras", "Heads", paraIdEncoded)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var parachainHeaders []byte
+
+	ok, err := conn.RPC.State.GetStorage(storageKey, &parachainHeaders, blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, fmt.Errorf("parachain header not found")
+	}
+
+	return parachainHeaders, nil
 }
 
 func fetchParaIDs(conn *client.SubstrateAPI, blockHash clientTypes.Hash) ([]uint32, error) {
