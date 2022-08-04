@@ -3,12 +3,9 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"github.com/ComposableFi/go-merkle-trees/merkle"
-	"reflect"
-
-	"github.com/ChainSafe/gossamer/lib/trie"
 	"github.com/ChainSafe/log15"
 	"github.com/ComposableFi/go-merkle-trees/hasher"
+	"github.com/ComposableFi/go-merkle-trees/merkle"
 	"github.com/ComposableFi/go-merkle-trees/mmr"
 	merkletypes "github.com/ComposableFi/go-merkle-trees/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -18,6 +15,7 @@ import (
 	host "github.com/cosmos/ibc-go/v5/modules/core/24-host"
 	"github.com/cosmos/ibc-go/v5/modules/core/exported"
 	"github.com/ethereum/go-ethereum/crypto"
+	"reflect"
 )
 
 // VerifyClientMessage checks if the clientMessage is of type Header or Misbehaviour and verifies the message
@@ -179,6 +177,7 @@ func (cs *ClientState) verifyHeader(
 
 	return nil
 }
+
 type ParaIdAndHeader struct {
 	ParaId uint32
 	Header []byte
@@ -245,7 +244,6 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 
 	return mmrProof, nil
 }
-
 
 func (cs *ClientState) UpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.ClientMessage) []exported.Height {
 	panic("implement me")

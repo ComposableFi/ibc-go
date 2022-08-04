@@ -56,13 +56,12 @@ require (
 
 require (
 	github.com/ChainSafe/gossamer v0.6.1-0.20220406182257-98400b30ca00
+	github.com/ComposableFi/go-substrate-rpc-client/v4 v4.0.1-0.20220802105626-e8d81785621c
 	github.com/klauspost/compress v1.15.1 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
 )
-
-require github.com/ComposableFi/go-substrate-rpc-client/v4 v4.0.1-0.20220520095549-28b7c5a4e212
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
