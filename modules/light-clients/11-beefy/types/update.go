@@ -246,82 +246,88 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 	return mmrProof, nil
 }
 
-func (cs ClientState) UpdateState(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, clientMsg exported.ClientMessage) error {
-	beefyHeader, ok := clientMsg.(*Header)
-	if !ok {
-		return sdkerrors.Wrapf(clienttypes.ErrInvalidClientType, "expected type %T, got %T", &Header{}, beefyHeader)
-	}
 
-	consensusStates := make(map[clienttypes.Height]*ConsensusState)
-
-	// iterate over each parachain header and set them in the store.
-	for _, v := range beefyHeader.ParachainHeaders {
-		// decode parachain header bytes to struct
-		header, err := DecodeParachainHeader(v.ParachainHeader)
-		if err != nil {
-			return sdkerrors.Wrap(err, "failed to decode parachain header")
-		}
-
-		// TODO: IBC should allow height to be generic
-		height := clienttypes.Height{
-			// revion number is used to store paraId
-			RevisionNumber: uint64(v.ParaId),
-			RevisionHeight: uint64(header.Number),
-		}
-
-		// check for duplicate consensus state
-		if consensusState, _ := GetConsensusState(clientStore, cdc, height); consensusState != nil {
-			// perform no-op
-			continue
-		}
-
-		trieProof := trie.NewEmptyTrie()
-		// load the extrinsics proof which is basically a partial trie
-		// that encodes the timestamp extrinsic
-		errr := trieProof.LoadFromProof(v.ExtrinsicProof, header.ExtrinsicsRoot[:])
-		if errr != nil {
-			return sdkerrors.Wrap(err, "failed to load extrinsic proof")
-		}
-		// the timestamp extrinsic is stored under the key 0u32 in big endian
-		key := make([]byte, 4)
-		timestamp, err := DecodeExtrinsicTimestamp(trieProof.Get(key))
-
-		if err != nil {
-			return sdkerrors.Wrap(err, "failed to decode timestamp extrinsic")
-		}
-
-		var ibcCommitmentRoot []byte
-		// IBC commitment root is stored in the header digests as a ConsensusItem
-		for _, v := range header.Digest {
-			if v.IsConsensus {
-
-				consensusID := v.AsConsensus.ConsensusEngineID
-
-				// this is a constant that comes from pallet-ibc
-				if bytes.Equal(consensusID[:], []byte("/IBC")) {
-					ibcCommitmentRoot = v.AsConsensus.Bytes
-				}
-			}
-		}
-
-		consensusStates[height] = &ConsensusState{
-			Timestamp: timestamp,
-			Root:      ibcCommitmentRoot,
-		}
-	}
-
-	// only set consensus states after doing checks
-	for height, consensusState := range consensusStates {
-		// we store consensus state as (PARA_ID, HEIGHT) => ConsensusState
-		setConsensusState(clientStore, cdc, consensusState, height)
-
-		// TODO: pruning!
-	}
-
-	setClientState(clientStore, cdc, &cs)
-
-	return nil
+func (cs *ClientState) UpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.ClientMessage) []exported.Height {
+	panic("implement me")
 }
+
+// TODO: return exported height from UpdateState
+//func (cs ClientState) UpdateState(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, clientMsg exported.ClientMessage) error {
+//	beefyHeader, ok := clientMsg.(*Header)
+//	if !ok {
+//		return sdkerrors.Wrapf(clienttypes.ErrInvalidClientType, "expected type %T, got %T", &Header{}, beefyHeader)
+//	}
+//
+//	consensusStates := make(map[clienttypes.Height]*ConsensusState)
+//
+//	// iterate over each parachain header and set them in the store.
+//	for _, v := range beefyHeader.ParachainHeaders {
+//		// decode parachain header bytes to struct
+//		header, err := DecodeParachainHeader(v.ParachainHeader)
+//		if err != nil {
+//			return sdkerrors.Wrap(err, "failed to decode parachain header")
+//		}
+//
+//		// TODO: IBC should allow height to be generic
+//		height := clienttypes.Height{
+//			// revion number is used to store paraId
+//			RevisionNumber: uint64(v.ParaId),
+//			RevisionHeight: uint64(header.Number),
+//		}
+//
+//		// check for duplicate consensus state
+//		if consensusState, _ := GetConsensusState(clientStore, cdc, height); consensusState != nil {
+//			// perform no-op
+//			continue
+//		}
+//
+//		trieProof := trie.NewEmptyTrie()
+//		// load the extrinsics proof which is basically a partial trie
+//		// that encodes the timestamp extrinsic
+//		errr := trieProof.LoadFromProof(v.ExtrinsicProof, header.ExtrinsicsRoot[:])
+//		if errr != nil {
+//			return sdkerrors.Wrap(err, "failed to load extrinsic proof")
+//		}
+//		// the timestamp extrinsic is stored under the key 0u32 in big endian
+//		key := make([]byte, 4)
+//		timestamp, err := DecodeExtrinsicTimestamp(trieProof.Get(key))
+//
+//		if err != nil {
+//			return sdkerrors.Wrap(err, "failed to decode timestamp extrinsic")
+//		}
+//
+//		var ibcCommitmentRoot []byte
+//		// IBC commitment root is stored in the header digests as a ConsensusItem
+//		for _, v := range header.Digest {
+//			if v.IsConsensus {
+//
+//				consensusID := v.AsConsensus.ConsensusEngineID
+//
+//				// this is a constant that comes from pallet-ibc
+//				if bytes.Equal(consensusID[:], []byte("/IBC")) {
+//					ibcCommitmentRoot = v.AsConsensus.Bytes
+//				}
+//			}
+//		}
+//
+//		consensusStates[height] = &ConsensusState{
+//			Timestamp: timestamp,
+//			Root:      ibcCommitmentRoot,
+//		}
+//	}
+//
+//	// only set consensus states after doing checks
+//	for height, consensusState := range consensusStates {
+//		// we store consensus state as (PARA_ID, HEIGHT) => ConsensusState
+//		setConsensusState(clientStore, cdc, consensusState, height)
+//
+//		// TODO: pruning!
+//	}
+//
+//	setClientState(clientStore, cdc, &cs)
+//
+//	return nil
+//}
 
 // CheckForMisbehaviour detects duplicate height misbehaviour and BFT time violation misbehaviour
 func (cs ClientState) CheckForMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, msg exported.ClientMessage) bool {
@@ -410,5 +416,21 @@ func (cs ClientState) UpdateStateOnMisbehaviour(ctx sdk.Context, cdc codec.Binar
 
 	clientStore.Set(host.ClientStateKey(), clienttypes.MustMarshalClientState(cdc, &cs))
 
+	panic("implement me")
+}
+
+func (cs ClientState) VerifyUpgradeAndUpdateState(ctx sdk.Context, cdc codec.BinaryCodec, store sdk.KVStore, newClient exported.ClientState, newConsState exported.ConsensusState, proofUpgradeClient, proofUpgradeConsState []byte) error {
+	panic("implement me")
+}
+
+func (cs ClientState) CheckSubstituteAndUpdateState(ctx sdk.Context, cdc codec.BinaryCodec, subjectClientStore, substituteClientStore sdk.KVStore, substituteClient exported.ClientState) (exported.ClientState, error) {
+	panic("implement me")
+}
+
+func (cs *ClientState) CheckHeaderAndUpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.ClientMessage) (exported.ClientState, exported.ConsensusState, error) {
+	panic("implement me")
+}
+
+func (cs *ClientState) CheckMisbehaviourAndUpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.ClientMessage) (exported.ClientState, error) {
 	panic("implement me")
 }

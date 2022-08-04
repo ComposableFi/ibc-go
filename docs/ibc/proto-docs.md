@@ -295,19 +295,6 @@
 - [ibc/core/types/v1/genesis.proto](#ibc/core/types/v1/genesis.proto)
     - [GenesisState](#ibc.core.types.v1.GenesisState)
   
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-- [ibc/lightclients/beefy/v1/beefy.proto](#ibc/lightclients/beefy/v1/beefy.proto)
-    - [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet)
-    - [ClientState](#ibc.lightclients.beefy.v1.ClientState)
-    - [ClientUpdateProof](#ibc.lightclients.beefy.v1.ClientUpdateProof)
-    - [ConsensusState](#ibc.lightclients.beefy.v1.ConsensusState)
-    - [Header](#ibc.lightclients.beefy.v1.Header)
-    - [Misbehaviour](#ibc.lightclients.beefy.v1.Misbehaviour)
-    - [MmrLeafPartial](#ibc.lightclients.beefy.v1.MmrLeafPartial)
-    - [ParachainHeaderProof](#ibc.lightclients.beefy.v1.ParachainHeaderProof)
-=======
 - [ibc/lightclients/beefy/v1/beefy.proto](#ibc/lightclients/beefy/v1/beefy.proto)
     - [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet)
     - [BeefyMmrLeaf](#ibc.lightclients.beefy.v1.BeefyMmrLeaf)
@@ -322,13 +309,7 @@
     - [ParachainHeader](#ibc.lightclients.beefy.v1.ParachainHeader)
     - [PayloadItem](#ibc.lightclients.beefy.v1.PayloadItem)
     - [SignedCommitment](#ibc.lightclients.beefy.v1.SignedCommitment)
-    - [TimestampExtrinsic](#ibc.lightclients.beefy.v1.TimestampExtrinsic)
->>>>>>> 2876a90 (introduce IBC proto types)
   
-- [ibc/lightclients/localhost/v1/localhost.proto](#ibc/lightclients/localhost/v1/localhost.proto)
-    - [ClientState](#ibc.lightclients.localhost.v1.ClientState)
-  
->>>>>>> 1764cc7 (feat: add beefy proto files)
 - [ibc/lightclients/solomachine/v1/solomachine.proto](#ibc/lightclients/solomachine/v1/solomachine.proto)
     - [ChannelStateData](#ibc.lightclients.solomachine.v1.ChannelStateData)
     - [ClientState](#ibc.lightclients.solomachine.v1.ClientState)
@@ -4368,166 +4349,6 @@ GenesisState defines the ibc module's genesis state.
 
 
 
-<<<<<<< HEAD
-=======
-<a name="ibc/lightclients/beefy/v1/beefy.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## ibc/lightclients/beefy/v1/beefy.proto
-
-
-
-<a name="ibc.lightclients.beefy.v1.BeefyAuthoritySet"></a>
-
-### BeefyAuthoritySet
-Beefy Authority Info
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `id` | [uint64](#uint64) |  | Id of the authority set, it should be strictly increasing |
-| `len` | [uint64](#uint64) |  | size of the authority set |
-| `authority_root` | [bytes](#bytes) |  | merkle root of all authority public keys. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.ClientState"></a>
-
-### ClientState
-ClientState from Beefy tracks the current validator set, latest height,
-and a possible frozen height.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `chain_id` | [string](#string) |  |  |
-| `mmr_root_hash` | [bytes](#bytes) |  | Latest mmr root hash |
-| `latest_beefy_height` | [uint64](#uint64) |  | block number for the latest mmr_root_hash |
-| `authority` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | authorities for the current round |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.ClientUpdateProof"></a>
-
-### ClientUpdateProof
-data needed to update the client
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `mmr_root_hash` | [bytes](#bytes) |  | new mmr_root_hash |
-| `signatures` | [bytes](#bytes) | repeated | gotten from rpc subscription |
-| `authority_proof` | [bytes](#bytes) | repeated | generated using full authority list from runtime |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.ConsensusState"></a>
-
-### ConsensusState
-ConsensusState defines the consensus state from Tendermint.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `timestamp` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | timestamp that corresponds to the block height in which the ConsensusState was stored. |
-| `root` | [bytes](#bytes) |  | commitment root (i.e app hash) |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.Header"></a>
-
-### Header
-Header contains the neccessary data to proove finality about IBC commitments
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `parachain_header` | [bytes](#bytes) |  | scale-encoded header bytes |
-| `extrinsic_proof` | [bytes](#bytes) | repeated | merkle proof of inclusion in header.extrinsic_root |
-| `timestamp_extrinsic` | [bytes](#bytes) |  | actual scale encoded timestamp extrinsic. |
-| `parachain_header_proof` | [ParachainHeaderProof](#ibc.lightclients.beefy.v1.ParachainHeaderProof) |  | Data needed to prove parachain header finality |
-| `client_update_proof` | [ClientUpdateProof](#ibc.lightclients.beefy.v1.ClientUpdateProof) |  | optional payload to update the mmr root hash. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.Misbehaviour"></a>
-
-### Misbehaviour
-Misbehaviour is a wrapper over two conflicting Headers
-that implements Misbehaviour interface expected by ICS-02
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `client_id` | [string](#string) |  |  |
-| `header_1` | [Header](#ibc.lightclients.beefy.v1.Header) |  |  |
-| `header_2` | [Header](#ibc.lightclients.beefy.v1.Header) |  |  |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.MmrLeafPartial"></a>
-
-### MmrLeafPartial
-Partial data for MmrLeaf
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `version` | [uint32](#uint32) |  | todo: this should be uint8 :( |
-| `parent_number` | [uint64](#uint64) |  | parent block for this leaf |
-| `parent_hash` | [bytes](#bytes) |  | parent hash for this leaf |
-| `next_authority_set` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | next authority set. |
-
-
-
-
-
-
-<a name="ibc.lightclients.beefy.v1.ParachainHeaderProof"></a>
-
-### ParachainHeaderProof
-data needed to prove finality about ibc commitments in parachain
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `leaf_index` | [uint64](#uint64) |  | leaf index, latest_beefy_block - beefy_activation_block |
-| `proofs` | [bytes](#bytes) | repeated | mmr proofs for this index, gotten from rpc "mmr_generateProofs" |
-| `heads_proof` | [bytes](#bytes) | repeated | proofs for our header in the parachain heads root |
-| `mmr_leaf_partial` | [MmrLeafPartial](#ibc.lightclients.beefy.v1.MmrLeafPartial) |  | reconstructed MmrLeaf, see beefy-go spec |
-
-
-
-
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
- <!-- end services -->
-
-
-
 <a name="ibc/lightclients/beefy/v1/beefy.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -4555,7 +4376,7 @@ Beefy Authority Info
 <a name="ibc.lightclients.beefy.v1.BeefyMmrLeaf"></a>
 
 ### BeefyMmrLeaf
-
+BeefyMmrLeaf leaf data
 
 
 | Field | Type | Label | Description |
@@ -4592,7 +4413,7 @@ Partial data for MmrLeaf
 <a name="ibc.lightclients.beefy.v1.ClientState"></a>
 
 ### ClientState
-ClientState from Tendermint tracks the current validator set, latest height,
+ClientState from Beefy tracks the current validator set, latest height,
 and a possible frozen height.
 
 
@@ -4601,7 +4422,7 @@ and a possible frozen height.
 | `mmr_root_hash` | [bytes](#bytes) |  | Latest mmr root hash |
 | `latest_beefy_height` | [uint32](#uint32) |  | block number for the latest mmr_root_hash |
 | `frozen_height` | [uint64](#uint64) |  | Block height when the client was frozen due to a misbehaviour |
-| `beefy_activation_block` | [uint32](#uint32) |  | block number that the beefy protocol was activated on the relay chain. This shoould be the first block in the merkle-mountain-range tree. |
+| `beefy_activation_block` | [uint32](#uint32) |  | block number that the beefy protocol was activated on the relay chain. This should be the first block in the merkle-mountain-range tree. |
 | `authority` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | authorities for the current round |
 | `next_authority_set` | [BeefyAuthoritySet](#ibc.lightclients.beefy.v1.BeefyAuthoritySet) |  | authorities for the next round |
 
@@ -4727,7 +4548,8 @@ data needed to prove parachain header inclusion in mmr.
 | `parachain_heads_proof` | [bytes](#bytes) | repeated | proofs for our header in the parachain heads root |
 | `heads_leaf_index` | [uint32](#uint32) |  | leaf index for parachain heads proof |
 | `heads_total_count` | [uint32](#uint32) |  | total number of para heads in parachain_heads_root |
-| `timestamp` | [TimestampExtrinsic](#ibc.lightclients.beefy.v1.TimestampExtrinsic) |  | data needed to provide timestamp for ConsensusState |
+| `extrinsic_proof` | [bytes](#bytes) | repeated | trie merkle proof of inclusion in header.extrinsic_root |
+| `timestamp_extrinsic` | [bytes](#bytes) |  | the actual timestamp extrinsic |
 
 
 
@@ -4765,21 +4587,6 @@ signed commitment data
 
 
 
-
-<a name="ibc.lightclients.beefy.v1.TimestampExtrinsic"></a>
-
-### TimestampExtrinsic
-Timestamp extrinsic data
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `extrinsic_proof` | [bytes](#bytes) | repeated | trie merkle proof of inclusion in header.extrinsic_root this already encodes the actual extrinsic |
-
-
-
-
-
  <!-- end messages -->
 
  <!-- end enums -->
@@ -4790,40 +4597,6 @@ Timestamp extrinsic data
 
 
 
-<a name="ibc/lightclients/localhost/v1/localhost.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## ibc/lightclients/localhost/v1/localhost.proto
-
-
-
-<a name="ibc.lightclients.localhost.v1.ClientState"></a>
-
-### ClientState
-ClientState defines a loopback (localhost) client. It requires (read-only)
-access to keys outside the client prefix.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `chain_id` | [string](#string) |  | self chain ID |
-| `height` | [ibc.core.client.v1.Height](#ibc.core.client.v1.Height) |  | self latest block height |
-
-
-
-
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
- <!-- end services -->
-
-
-
->>>>>>> 1764cc7 (feat: add beefy proto files)
 <a name="ibc/lightclients/solomachine/v1/solomachine.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 

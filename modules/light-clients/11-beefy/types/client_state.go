@@ -485,18 +485,14 @@ func (cs ClientState) VerifyNextSequenceRecv(
 	return nil
 }
 
-func (cs ClientState) VerifyUpgradeAndUpdateState(ctx sdk.Context, cdc codec.BinaryCodec, store sdk.KVStore, newClient exported.ClientState, newConsState exported.ConsensusState, proofUpgradeClient, proofUpgradeConsState []byte) error {
+func (cs *ClientState) VerifyMembership(ctx sdk.Context, clientStore sdk.KVStore, cdc codec.BinaryCodec, height exported.Height, delayTimePeriod uint64, delayBlockPeriod uint64, proof []byte, path []byte, value []byte) error {
 	panic("implement me")
 }
 
-func (cs ClientState) CheckSubstituteAndUpdateState(ctx sdk.Context, cdc codec.BinaryCodec, subjectClientStore, substituteClientStore sdk.KVStore, substituteClient exported.ClientState) (exported.ClientState, error) {
+func (cs *ClientState) VerifyNonMembership(ctx sdk.Context, clientStore sdk.KVStore, cdc codec.BinaryCodec, height exported.Height, delayTimePeriod uint64, delayBlockPeriod uint64, proof []byte, path []byte) error {
 	panic("implement me")
 }
 
-func (cs *ClientState) CheckHeaderAndUpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.ClientMessage) (exported.ClientState, exported.ConsensusState, error) {
-	panic("implement me")
-}
-
-func (cs *ClientState) CheckMisbehaviourAndUpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.ClientMessage) (exported.ClientState, error) {
+func (cs *ClientState) GetTimestampAtHeight(ctx sdk.Context, clientStore sdk.KVStore, cdc codec.BinaryCodec, height exported.Height) (uint64, error) {
 	panic("implement me")
 }
