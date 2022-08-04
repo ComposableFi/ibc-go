@@ -10,8 +10,8 @@ import (
 	"github.com/ComposableFi/go-substrate-rpc-client/v4/scale"
 	substrate "github.com/ComposableFi/go-substrate-rpc-client/v4/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	ics02 "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v3/modules/core/exported"
+	ics02 "github.com/cosmos/ibc-go/v5/modules/core/02-client/types"
+	"github.com/cosmos/ibc-go/v5/modules/core/exported"
 )
 
 var _ exported.ClientMessage = &Header{}
