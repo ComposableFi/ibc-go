@@ -118,11 +118,10 @@ func (cs ClientState) VerifyClientState(
 	isVerified, err := trie.VerifyProof(beefyProof, provingConsensusState.Root, []trie.Pair{{Key: key, Value: csEncoded}})
 	if err != nil {
 		log.Debug("error verifying proof: %v", err.Error())
-		//return sdkerrors.Wrap(err, "error verifying proof")
 	}
 
 	if !isVerified {
-		//return sdkerrors.Wrap(err, "unable to verify client state")
+		// return sdkerrors.Wrap(err, "unable to verify client state")
 		log.Debug("unable to verify client state")
 	}
 
@@ -176,11 +175,10 @@ func (cs ClientState) VerifyClientConsensusState(
 	isVerified, err := trie.VerifyProof(beefyProof, provingConsensusState.Root, []trie.Pair{{Key: key, Value: csEncoded}})
 	if err != nil {
 		log.Debug("error verifying proof: %v", err.Error())
-		//return sdkerrors.Wrap(err, "error verifying proof")
 	}
 
 	if !isVerified {
-		//return sdkerrors.Wrap(err, "unable to verify client consensus state")
+		// return sdkerrors.Wrap(err, "unable to verify client consensus state")
 		log.Debug("unable to verify client consensus state")
 	}
 
@@ -224,11 +222,10 @@ func (cs ClientState) VerifyPacketCommitment(
 	isVerified, err := trie.VerifyProof(beefyProof, consensusState.Root, []trie.Pair{{Key: key, Value: commitmentBytes}})
 	if err != nil {
 		log.Debug("error verifying proof: %v", err.Error())
-		//return sdkerrors.Wrap(err, "error verifying proof")
 	}
 
 	if !isVerified {
-		//return sdkerrors.Wrap(err, "unable to verify client consensus state")
+		// return sdkerrors.Wrap(err, "unable to verify client consensus state")
 		log.Debug("unable to verify client consensus state")
 	}
 	return nil
@@ -318,11 +315,10 @@ func (cs ClientState) VerifyConnectionState(
 	isVerified, err := trie.VerifyProof(beefyProof, consensusState.Root, []trie.Pair{{Key: key, Value: connEncoded}})
 	if err != nil {
 		log.Debug("error verifying proof: %v", err.Error())
-		//return sdkerrors.Wrap(err, "error verifying proof")
 	}
 
 	if !isVerified {
-		//return sdkerrors.Wrap(err, "unable to verify client consensus state")
+		// return sdkerrors.Wrap(err, "unable to verify client consensus state")
 		log.Debug("unable to verify client consensus state")
 	}
 	return nil
@@ -365,11 +361,10 @@ func (cs ClientState) VerifyPacketAcknowledgement(
 	isVerified, err := trie.VerifyProof(beefyProof, consensusState.Root, []trie.Pair{{Key: key, Value: channeltypes.CommitAcknowledgement(acknowledgement)}})
 	if err != nil {
 		log.Debug("error verifying proof: %v", err.Error())
-		//return sdkerrors.Wrap(err, "error verifying proof")
 	}
 
 	if !isVerified {
-		//return sdkerrors.Wrap(err, "unable to verify client consensus state")
+		// return sdkerrors.Wrap(err, "unable to verify client consensus state")
 		log.Debug("unable to verify client consensus state")
 	}
 
@@ -408,11 +403,10 @@ func (cs ClientState) VerifyChannelState(store sdk.KVStore, cdc codec.BinaryCode
 	isVerified, err := trie.VerifyProof(beefyProof, consensusState.Root, []trie.Pair{{Key: key, Value: chanEncoded}})
 	if err != nil {
 		log.Debug("error verifying proof: %v", err.Error())
-		//return sdkerrors.Wrap(err, "error verifying proof")
 	}
 
 	if !isVerified {
-		//return sdkerrors.Wrap(err, "unable to verify client consensus state")
+		// return sdkerrors.Wrap(err, "unable to verify client consensus state")
 		log.Debug("unable to verify client consensus state")
 	}
 
@@ -485,7 +479,6 @@ func (cs ClientState) VerifyNextSequenceRecv(
 	}
 
 	if !isVerified {
-		//return sdkerrors.Wrap(err, "unable to verify client consensus state")
 		log.Debug("unable to verify client consensus state")
 	}
 
