@@ -119,6 +119,7 @@ func getTmConsensusState(clientStore sdk.KVStore, cdc codec.BinaryCodec, key []b
 }
 
 // setClientState stores the client state
+//nolint
 func setClientState(clientStore sdk.KVStore, cdc codec.BinaryCodec, clientState *ClientState) {
 	key := host.ClientStateKey()
 	val := clienttypes.MustMarshalClientState(cdc, clientState)
@@ -126,6 +127,7 @@ func setClientState(clientStore sdk.KVStore, cdc codec.BinaryCodec, clientState 
 }
 
 // setConsensusState stores the consensus state at the given height.
+//nolint
 func setConsensusState(clientStore sdk.KVStore, cdc codec.BinaryCodec, consensusState *ConsensusState, height exported.Height) {
 	key := host.ConsensusStateKey(height)
 	val := clienttypes.MustMarshalConsensusState(cdc, consensusState)
@@ -136,11 +138,13 @@ func setConsensusState(clientStore sdk.KVStore, cdc codec.BinaryCodec, consensus
 // as this is internal tendermint light client logic.
 // client state and consensus state will be set by client keeper
 // set iteration key to provide ability for efficient ordered iteration of consensus states.
+//nolint
 func setConsensusMetadata(ctx sdk.Context, clientStore sdk.KVStore, height exported.Height) {
 	setConsensusMetadataWithValues(clientStore, height, clienttypes.GetSelfHeight(ctx), uint64(ctx.BlockTime().UnixNano()))
 }
 
 // setConsensusMetadataWithValues sets the consensus metadata with the provided values
+//nolint
 func setConsensusMetadataWithValues(
 	clientStore sdk.KVStore, height,
 	processedHeight exported.Height,

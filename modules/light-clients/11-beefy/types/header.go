@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"log"
 	"time"
 
@@ -110,7 +111,7 @@ func (h Header) ValidateBasic() error {
 		}
 
 		if ext := t.Get(key); len(ext) == 0 {
-			// todo: error
+			return fmt.Errorf("invalid key length")
 		}
 
 		// todo: decode extrinsic.
@@ -123,6 +124,5 @@ func (h Header) ValidateBasic() error {
 // An error is returned if the new public key is nil or the cached value
 // is not a PubKey.
 func (h Header) GetPubKey() (cryptotypes.PubKey, error) {
-	panic("implement me")
 	return nil, nil
 }
