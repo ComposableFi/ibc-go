@@ -15,7 +15,7 @@ import (
 	"github.com/cosmos/ibc-go/v5/modules/core/exported"
 )
 
-var _ exported.ClientMessage = &Header{}
+var _ exported.Header = &Header{}
 
 const revisionNumber = 0
 
@@ -29,13 +29,13 @@ type HeadData struct {
 // as an argument and returns a concrete substrate Header type.
 func DecodeParachainHeader(hb []byte) (substrate.Header, error) {
 	var headData HeadData
-	err := substrate.DecodeFromBytes(hb, &headData)
+	err := substrate.Decode(hb, &headData)
 	if err != nil {
 		return substrate.Header{}, err
 	}
 
 	var h substrate.Header
-	err = substrate.DecodeFromBytes(headData.Head, &h)
+	err = substrate.Decode(headData.Head, &h)
 	if err != nil {
 		return substrate.Header{}, err
 	}
@@ -45,7 +45,7 @@ func DecodeParachainHeader(hb []byte) (substrate.Header, error) {
 // DecodeExtrinsicTimestamp decodes a scale encoded timestamp to a time.Time type
 func DecodeExtrinsicTimestamp(encodedExtrinsic []byte) (time.Time, error) {
 	var extrinsic substrate.Extrinsic
-	decodeErr := substrate.DecodeFromBytes(encodedExtrinsic, &extrinsic)
+	decodeErr := substrate.Decode(encodedExtrinsic, &extrinsic)
 	if decodeErr != nil {
 		return time.Time{}, decodeErr
 	}

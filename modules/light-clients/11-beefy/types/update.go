@@ -22,7 +22,7 @@ import (
 // VerifyClientMessage checks if the clientMessage is of type Header or Misbehaviour and verifies the message
 func (cs *ClientState) VerifyClientMessage(
 	ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore,
-	clientMsg exported.ClientMessage,
+	clientMsg exported.Header,
 ) error {
 	switch msg := clientMsg.(type) {
 	case *Header:
@@ -325,7 +325,7 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 }*/
 
 // CheckForMisbehaviour detects duplicate height misbehaviour and BFT time violation misbehaviour
-func (cs ClientState) CheckForMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, msg exported.ClientMessage) bool {
+func (cs ClientState) CheckForMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, msg exported.Header) bool {
 	switch msg := msg.(type) {
 	case *Header:
 		tmHeader := msg
@@ -403,13 +403,13 @@ func authoritiesThreshold(authoritySet BeefyAuthoritySet) uint32 {
 
 // UpdateStateOnMisbehaviour updates state upon misbehaviour, freezing the ClientState. This method should only be called when misbehaviour is detected
 // as it does not perform any misbehaviour checks.
-func (cs ClientState) UpdateStateOnMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, _ exported.ClientMessage) {
+func (cs ClientState) UpdateStateOnMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, _ exported.Header) {
 	clientStore.Set(host.ClientStateKey(), clienttypes.MustMarshalClientState(cdc, &cs))
 
 	panic("implement me")
 }
 
-func (cs *ClientState) UpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.ClientMessage) []exported.Height {
+func (cs *ClientState) UpdateState(context sdk.Context, codec codec.BinaryCodec, store sdk.KVStore, message exported.Header) []exported.Height {
 	panic("implement me")
 }
 

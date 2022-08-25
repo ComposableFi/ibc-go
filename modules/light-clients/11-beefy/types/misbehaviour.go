@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/ibc-go/v5/modules/core/exported"
 )
 
-var _ exported.ClientMessage = &Misbehaviour{}
+var _ exported.Header = &Misbehaviour{}
 
 // FrozenHeight Use the same FrozenHeight for all misbehaviour
 var FrozenHeight = clienttypes.NewHeight(0, 1)

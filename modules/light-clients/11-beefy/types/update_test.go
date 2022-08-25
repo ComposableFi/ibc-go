@@ -283,94 +283,94 @@ func TestCheckHeaderAndUpdateState(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			latestLeaf := mmrProof.Leaf
-
-			BeefyNextAuthoritySetRoot := bytes32(latestLeaf.BeefyNextAuthoritySet.Root[:])
-			parentHash := bytes32(latestLeaf.ParentNumberAndHash.Hash[:])
-
-			var latestLeafMmrProof = make([][]byte, len(mmrProof.Proof.Items))
-			for i := 0; i < len(mmrProof.Proof.Items); i++ {
-				latestLeafMmrProof[i] = mmrProof.Proof.Items[i][:]
-			}
-			var mmrBatchProofItems = make([][]byte, len(mmrBatchProof.Proof.Items))
-			for i := 0; i < len(mmrBatchProof.Proof.Items); i++ {
-				mmrBatchProofItems[i] = mmrBatchProof.Proof.Items[i][:]
-			}
-			var signatures []*types.CommitmentSignature
-			var authorityIndices []uint64
-			// luckily for us, this is already sorted and maps to the right authority index in the authority root.
-			for i, v := range signedCommitment.Signatures {
-				if v.IsSome() {
-					_, sig := v.Unwrap()
-					signatures = append(signatures, &types.CommitmentSignature{
-						Signature:      sig[:],
-						AuthorityIndex: uint32(i),
-					})
-					authorityIndices = append(authorityIndices, uint64(i))
-				}
-			}
-
-			CommitmentPayload := signedCommitment.Commitment.Payload[0]
-			var payloadId types.SizedByte2 = CommitmentPayload.Id
-			ParachainHeads := bytes32(latestLeaf.ParachainHeads[:])
-			leafIndex := clientState.GetLeafIndexForBlockNumber(blockNumber)
-
-			mmrUpdateProof := types.MmrUpdateProof{
-				MmrLeaf: &types.BeefyMmrLeaf{
-					Version:        types.U8(latestLeaf.Version),
-					ParentNumber:   latestLeaf.ParentNumberAndHash.ParentNumber,
-					ParentHash:     &parentHash,
-					ParachainHeads: &ParachainHeads,
-					BeefyNextAuthoritySet: types.BeefyAuthoritySet{
-						Id:            latestLeaf.BeefyNextAuthoritySet.ID,
-						Len:           latestLeaf.BeefyNextAuthoritySet.Len,
-						AuthorityRoot: &BeefyNextAuthoritySetRoot,
-					},
-				},
-				MmrLeafIndex: uint64(leafIndex),
-				MmrProof:     latestLeafMmrProof,
-				SignedCommitment: &types.SignedCommitment{
-					Commitment: &types.Commitment{
-						Payload:        []*types.PayloadItem{{PayloadId: &payloadId, PayloadData: CommitmentPayload.Value}},
-						BlockNumer:     uint32(signedCommitment.Commitment.BlockNumber),
-						ValidatorSetId: uint64(signedCommitment.Commitment.ValidatorSetID),
-					},
-					Signatures: signatures,
-				},
-				AuthoritiesProof: authorityTree.Proof(authorityIndices).ProofHashes(),
-			}
-
-			header := types.Header{
-				ParachainHeaders: parachainHeaders,
-				MmrProofs:        mmrBatchProofItems,
-				MmrSize:          mmr.LeafIndexToMMRSize(uint64(leafIndex)),
-				MmrUpdateProof:   &mmrUpdateProof,
-			}
-
-			err = clientState.VerifyClientMessage(sdk.Context{}, nil, nil, &header)
-			require.NoError(t, err)
-
-			t.Logf("clientState.LatestBeefyHeight: %d clientState.MmrRootHash: %s", clientState.LatestBeefyHeight, hex.EncodeToString(clientState.MmrRootHash))
-
-			if clientState.LatestBeefyHeight != uint32(signedCommitment.Commitment.BlockNumber) {
-				require.Equal(t, clientState.MmrRootHash, signedCommitment.Commitment.Payload, "failed to update client state. LatestBeefyHeight: %d, Commitment.BlockNumber %d", clientState.LatestBeefyHeight, uint32(signedCommitment.Commitment.BlockNumber))
-			}
-			t.Log("====== successfully processed justification! ======")
-
-			// if UPDATE_STATE_MODE == "true" {
-			// 	paramSpace := types2.NewSubspace(nil, nil, nil, nil, "test")
-			// 	//paramSpace = paramSpace.WithKeyTable(clientypes.ParamKeyTable())
-
-			// 	k := keeper.NewKeeper(nil, nil, paramSpace, nil, nil)
-			// 	ctx := sdk.Context{}
-			// 	store := k.ClientStore(ctx, "1234")
-
-			// 	clientState.UpdateState(sdk.Context{}, nil, store, &header)
-			// }
-
-			// TODO: assert that the consensus states were actually persisted
-			// TODO: tests against invalid proofs and consensus states
-		}
+		//	latestLeaf := mmrProof.Leaf
+		//
+		//	BeefyNextAuthoritySetRoot := bytes32(latestLeaf.BeefyNextAuthoritySet.Root[:])
+		//	parentHash := bytes32(latestLeaf.ParentNumberAndHash.Hash[:])
+		//
+		//	var latestLeafMmrProof = make([][]byte, len(mmrProof.Proof.Items))
+		//	for i := 0; i < len(mmrProof.Proof.Items); i++ {
+		//		latestLeafMmrProof[i] = mmrProof.Proof.Items[i][:]
+		//	}
+		//	var mmrBatchProofItems = make([][]byte, len(mmrBatchProof.Proof.Items))
+		//	for i := 0; i < len(mmrBatchProof.Proof.Items); i++ {
+		//		mmrBatchProofItems[i] = mmrBatchProof.Proof.Items[i][:]
+		//	}
+		//	var signatures []*types.CommitmentSignature
+		//	var authorityIndices []uint64
+		//	// luckily for us, this is already sorted and maps to the right authority index in the authority root.
+		//	for i, v := range signedCommitment.Signatures {
+		//		if v.IsSome() {
+		//			_, sig := v.Unwrap()
+		//			signatures = append(signatures, &types.CommitmentSignature{
+		//				Signature:      sig[:],
+		//				AuthorityIndex: uint32(i),
+		//			})
+		//			authorityIndices = append(authorityIndices, uint64(i))
+		//		}
+		//	}
+		//
+		//	CommitmentPayload := signedCommitment.Commitment.Payload[0]
+		//	var payloadId types.SizedByte2 = CommitmentPayload.Id
+		//	ParachainHeads := bytes32(latestLeaf.ParachainHeads[:])
+		//	leafIndex := clientState.GetLeafIndexForBlockNumber(blockNumber)
+		//
+		//	mmrUpdateProof := types.MmrUpdateProof{
+		//		MmrLeaf: &types.BeefyMmrLeaf{
+		//			Version:        types.U8(latestLeaf.Version),
+		//			ParentNumber:   latestLeaf.ParentNumberAndHash.ParentNumber,
+		//			ParentHash:     &parentHash,
+		//			ParachainHeads: &ParachainHeads,
+		//			BeefyNextAuthoritySet: types.BeefyAuthoritySet{
+		//				Id:            latestLeaf.BeefyNextAuthoritySet.ID,
+		//				Len:           latestLeaf.BeefyNextAuthoritySet.Len,
+		//				AuthorityRoot: &BeefyNextAuthoritySetRoot,
+		//			},
+		//		},
+		//		MmrLeafIndex: uint64(leafIndex),
+		//		MmrProof:     latestLeafMmrProof,
+		//		SignedCommitment: &types.SignedCommitment{
+		//			Commitment: &types.Commitment{
+		//				Payload:        []*types.PayloadItem{{PayloadId: &payloadId, PayloadData: CommitmentPayload.Value}},
+		//				BlockNumer:     uint32(signedCommitment.Commitment.BlockNumber),
+		//				ValidatorSetId: uint64(signedCommitment.Commitment.ValidatorSetID),
+		//			},
+		//			Signatures: signatures,
+		//		},
+		//		AuthoritiesProof: authorityTree.Proof(authorityIndices).ProofHashes(),
+		//	}
+		//
+		//	header := types.Header{
+		//		ParachainHeaders: parachainHeaders,
+		//		MmrProofs:        mmrBatchProofItems,
+		//		MmrSize:          mmr.LeafIndexToMMRSize(uint64(leafIndex)),
+		//		MmrUpdateProof:   &mmrUpdateProof,
+		//	}
+		//
+		//	err = clientState.VerifyClientMessage(sdk.Context{}, nil, nil, &header)
+		//	require.NoError(t, err)
+		//
+		//	t.Logf("clientState.LatestBeefyHeight: %d clientState.MmrRootHash: %s", clientState.LatestBeefyHeight, hex.EncodeToString(clientState.MmrRootHash))
+		//
+		//	if clientState.LatestBeefyHeight != uint32(signedCommitment.Commitment.BlockNumber) {
+		//		require.Equal(t, clientState.MmrRootHash, signedCommitment.Commitment.Payload, "failed to update client state. LatestBeefyHeight: %d, Commitment.BlockNumber %d", clientState.LatestBeefyHeight, uint32(signedCommitment.Commitment.BlockNumber))
+		//	}
+		//	t.Log("====== successfully processed justification! ======")
+		//
+		//	// if UPDATE_STATE_MODE == "true" {
+		//	// 	paramSpace := types2.NewSubspace(nil, nil, nil, nil, "test")
+		//	// 	//paramSpace = paramSpace.WithKeyTable(clientypes.ParamKeyTable())
+		//
+		//	// 	k := keeper.NewKeeper(nil, nil, paramSpace, nil, nil)
+		//	// 	ctx := sdk.Context{}
+		//	// 	store := k.ClientStore(ctx, "1234")
+		//
+		//	// 	clientState.UpdateState(sdk.Context{}, nil, store, &header)
+		//	// }
+		//
+		//	// TODO: assert that the consensus states were actually persisted
+		//	// TODO: tests against invalid proofs and consensus states
+		//}
 	}
 }
 
