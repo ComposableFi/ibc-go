@@ -45,9 +45,9 @@ func (cs *ClientState) verifyHeader(
 	beefyHeader *Header,
 ) error {
 	var (
-		mmrUpdateProof   = beefyHeader.MmrUpdateProof
-		authoritiesProof = beefyHeader.MmrUpdateProof.AuthoritiesProof
-		signedCommitment = beefyHeader.MmrUpdateProof.SignedCommitment
+		clientState      = beefyHeader.ClientState
+		authoritiesProof = beefyHeader.ClientState.AuthoritiesProof
+		signedCommitment = beefyHeader.ClientState.SignedCommitment
 	)
 
 	// checking signatures is expensive (667 authorities for kusama),
@@ -126,19 +126,19 @@ func (cs *ClientState) verifyHeader(
 				// the next authorities are in the latest BeefyMmrLeaf
 
 				// scale encode the mmr leaf
-				mmrLeafBytes, err := Encode(mmrUpdateProof.MmrLeaf)
+				mmrLeafBytes, err := Encode(clientState.MmrLeaf)
 				if err != nil {
 					return sdkerrors.Wrap(err, ErrInvalidCommitment.Error())
 				}
 				// we treat this leaf as the latest leaf in the mmr
-				mmrSize := mmr.LeafIndexToMMRSize(mmrUpdateProof.MmrLeafIndex)
+				mmrSize := mmr.LeafIndexToMMRSize(clientState.MmrLeafIndex)
 				mmrLeaves := []merkletypes.Leaf{
 					{
 						Hash:  crypto.Keccak256(mmrLeafBytes),
-						Index: mmrUpdateProof.MmrLeafIndex,
+						Index: clientState.MmrLeafIndex,
 					},
 				}
-				mmrProof := mmr.NewProof(mmrSize, mmrUpdateProof.MmrProof, mmrLeaves, hasher.Keccak256Hasher{})
+				mmrProof := mmr.NewProof(mmrSize, clientState.MmrProof, mmrLeaves, hasher.Keccak256Hasher{})
 				// verify that the leaf is valid, for the signed mmr-root-hash
 				if !mmrProof.Verify(payload.PayloadData) {
 					return sdkerrors.Wrap(err, ErrFailedVerifyMMRLeaf.Error()) // error!, mmr proof is invalid
@@ -151,7 +151,7 @@ func (cs *ClientState) verifyHeader(
 				if updatedAuthority {
 					cs.Authority = cs.NextAuthoritySet
 					// mmr leaf has been verified, use it to update our view of the next authority set
-					cs.NextAuthoritySet = &mmrUpdateProof.MmrLeaf.BeefyNextAuthoritySet
+					cs.NextAuthoritySet = &clientState.MmrLeaf.BeefyNextAuthoritySet
 				}
 				break
 			}
@@ -185,14 +185,14 @@ type ParaIdAndHeader struct {
 }
 
 func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Proof, error) {
-	mmrLeaves := make([]merkletypes.Leaf, len(beefyHeader.ParachainHeaders))
+	mmrLeaves := make([]merkletypes.Leaf, len(beefyHeader.ConsensusStateUpdate.ParachainHeaders))
 
 	// verify parachain headers
-	for i := 0; i < len(beefyHeader.ParachainHeaders); i++ {
+	for i := 0; i < len(beefyHeader.ConsensusStateUpdate.ParachainHeaders); i++ {
 		// first we need to reconstruct the mmr leaf for this header
-		parachainHeader := beefyHeader.ParachainHeaders[i]
+		parachainHeader := beefyHeader.ConsensusStateUpdate.ParachainHeaders[i]
 
-		headsLeafBytes, err := Encode(ParaIdAndHeader{ParaId: parachainHeader.ParaId, Header: parachainHeader.ParachainHeader})
+		headsLeafBytes, err := Encode(ParaIdAndHeader{ParaId: cs.ParaId, Header: parachainHeader.ParachainHeader})
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, ErrInvalivParachainHeadsProof.Error())
 		}
@@ -241,7 +241,7 @@ func (cs *ClientState) parachainHeadersToMMRProof(beefyHeader *Header) (*mmr.Pro
 		}
 	}
 
-	mmrProof := mmr.NewProof(beefyHeader.MmrSize, beefyHeader.MmrProofs, mmrLeaves, hasher.Keccak256Hasher{})
+	mmrProof := mmr.NewProof(beefyHeader.ConsensusStateUpdate.MmrSize, beefyHeader.ConsensusStateUpdate.MmrProofs, mmrLeaves, hasher.Keccak256Hasher{})
 
 	return mmrProof, nil
 }

@@ -145,7 +145,7 @@ message Header {
   option (gogoproto.goproto_getters) = false;
 
   // optional payload to update ConsensusState
-  ConsensusStateUpdateProof consensus_state = 1 [(gogoproto.nullable) = true];
+  ConsensusStateUpdateProof consensus_state_update = 1 [(gogoproto.nullable) = true];
 
   // optional payload to update the ClientState.
   ClientStateUpdateProof client_state = 2 [(gogoproto.nullable) = true];

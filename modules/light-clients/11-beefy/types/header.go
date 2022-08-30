@@ -61,7 +61,7 @@ func DecodeExtrinsicTimestamp(encodedExtrinsic []byte) (time.Time, error) {
 
 // ConsensusState returns the updated consensus state associated with the header
 func (h Header) ConsensusState() *ConsensusState {
-	parachainHeader, err := DecodeParachainHeader(h.ParachainHeaders[0].ParachainHeader)
+	parachainHeader, err := DecodeParachainHeader(h.ConsensusStateUpdate.ParachainHeaders[0].ParachainHeader)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func (h Header) ClientType() string {
 // header is nil.
 // NOTE: the header.Header is checked to be non nil in ValidateBasic.
 func (h Header) GetHeight() exported.Height {
-	parachainHeader, err := DecodeParachainHeader(h.ParachainHeaders[0].ParachainHeader)
+	parachainHeader, err := DecodeParachainHeader(h.ConsensusStateUpdate.ParachainHeaders[0].ParachainHeader)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func (h Header) GetHeight() exported.Height {
 // NOTE: TrustedHeight and TrustedValidators may be empty when creating client
 // with MsgCreateClient
 func (h Header) ValidateBasic() error {
-	for _, header := range h.ParachainHeaders {
+	for _, header := range h.ConsensusStateUpdate.ParachainHeaders {
 		decHeader, err := DecodeParachainHeader(header.ParachainHeader)
 		if err != nil {
 			return err
