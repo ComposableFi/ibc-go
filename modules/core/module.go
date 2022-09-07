@@ -36,7 +36,7 @@ var (
 
 // AppModuleBasic defines the basic application module used by the ibc module.
 type AppModuleBasic struct {
-	ClientRegister []ClientRegisterer
+	ClientRegisterers []ClientRegisterer
 }
 
 var _ module.AppModuleBasic = AppModuleBasic{}
@@ -98,8 +98,11 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 }
 
 // RegisterInterfaces registers module concrete types into protobuf Any.
-func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+func (amb AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registry)
+	for _, registerer := range amb.ClientRegisterers {
+		registerer(registry)
+	}
 }
 
 // AppModule implements an application module for the ibc module.
