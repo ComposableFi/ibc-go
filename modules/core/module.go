@@ -35,9 +35,17 @@ var (
 )
 
 // AppModuleBasic defines the basic application module used by the ibc module.
-type AppModuleBasic struct{}
+type AppModuleBasic struct {
+	ClientRegister []ClientRegisterer
+}
 
 var _ module.AppModuleBasic = AppModuleBasic{}
+
+type ClientRegisterer func(codectypes.InterfaceRegistry)
+
+func NewAppModuleBasic(register []ClientRegisterer) AppModuleBasic {
+	return AppModuleBasic{register}
+}
 
 // Name returns the ibc module's name.
 func (AppModuleBasic) Name() string {
