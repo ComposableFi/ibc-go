@@ -38,8 +38,9 @@ require (
 
 require (
 	github.com/ChainSafe/log15 v1.0.0
-	github.com/ComposableFi/go-substrate-rpc-client/v4 v4.0.1-0.20220520095549-28b7c5a4e212
-	github.com/ethereum/go-ethereum v1.10.20
+	github.com/ComposableFi/go-substrate-rpc-client/v4 v4.0.1-0.20220830115327-2c45fdcbfba1
+	github.com/ComposableFi/ics11-beefy v0.0.0-20220914125932-1429048c4db8
+	github.com/ethereum/go-ethereum v1.10.23
 )
 
 require github.com/zondax/hid v0.9.1-0.20220302062450-5552068d2266 // indirect

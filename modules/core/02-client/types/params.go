@@ -6,12 +6,13 @@ import (
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
+	beefyexported "github.com/ComposableFi/ics11-beefy/exported"
 	"github.com/cosmos/ibc-go/v5/modules/core/exported"
 )
 
 var (
 	// DefaultAllowedClients are "06-solomachine" and "07-tendermint"
-	DefaultAllowedClients = []string{exported.Solomachine, exported.Tendermint, exported.Beefy}
+	DefaultAllowedClients = []string{exported.Solomachine, exported.Tendermint, beefyexported.Beefy}
 
 	// KeyAllowedClients is store's key for AllowedClients Params
 	KeyAllowedClients = []byte("AllowedClients")

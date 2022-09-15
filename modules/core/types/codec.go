@@ -3,6 +3,7 @@ package types
 import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
+	ibcbeefytypes "github.com/ComposableFi/ics11-beefy/types"
 	clienttypes "github.com/cosmos/ibc-go/v5/modules/core/02-client/types"
 	connectiontypes "github.com/cosmos/ibc-go/v5/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/v5/modules/core/04-channel/types"
@@ -10,7 +11,6 @@ import (
 	solomachinetypes "github.com/cosmos/ibc-go/v5/modules/light-clients/06-solomachine/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v5/modules/light-clients/07-tendermint/types"
 	localhosttypes "github.com/cosmos/ibc-go/v5/modules/light-clients/09-localhost/types"
-	ibcbeefytypes "github.com/cosmos/ibc-go/v5/modules/light-clients/11-beefy/types"
 )
 
 // RegisterInterfaces registers x/ibc interfaces into protobuf Any.
