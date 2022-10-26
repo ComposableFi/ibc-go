@@ -62,11 +62,10 @@ func (r *clientStateCallResponse) resetImmutables(c *ClientState) {
 	}
 
 	if r.NewConsensusState != nil {
-		r.NewConsensusState.CodeId = c.CodeId
 	}
 
 	if r.NewClientState != nil {
-		r.NewClientState.CodeId = c.CodeId
+		r.NewClientState.CodeHash = c.CodeHash
 	}
 }
 

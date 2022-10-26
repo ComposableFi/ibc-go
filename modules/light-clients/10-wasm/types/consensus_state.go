@@ -23,6 +23,7 @@ func (m *ConsensusState) GetTimestamp() uint64 {
 }
 
 func (m *ConsensusState) ValidateBasic() error {
+	// TODO: What can be validated here? ConsensusState has an opaque data - should it be delegated to the smc right here?
 	if m.Root.Empty() {
 		return sdkerrors.Wrap(clienttypes.ErrInvalidConsensus, "root cannot be empty")
 	}

@@ -49,7 +49,7 @@ func (c *ClientState) ExportMetadata(store sdk.KVStore) []exported.GenesisMetada
 	if err != nil {
 		// TODO: Handle error
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		// TODO: Handle error
 	}
@@ -92,7 +92,7 @@ func (c *ClientState) ZeroCustomFields() exported.ClientState {
 			Address: "contract",
 		},
 	}
-	out, err := callContractWithEnvAndMeter(c.CodeId, nil, &FailKVStore{}, mockEnv, gasMeter, encodedData)
+	out, err := callContractWithEnvAndMeter(c.CodeHash, nil, &FailKVStore{}, mockEnv, gasMeter, encodedData)
 	if err != nil {
 		// TODO: Handle error
 	}
@@ -130,12 +130,12 @@ func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryCode
 	// Under the hood there are two calls to wasm contract for initialization as by design
 	// cosmwasm does not allow init call to return any value.
 
-	_, err = initContract(c.CodeId, context, store, encodedData)
+	_, err = initContract(c.CodeHash, context, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToInit, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
-	out, err := callContract(c.CodeId, context, store, encodedData)
+	out, err := callContract(c.CodeHash, context, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -311,7 +311,7 @@ func (c *ClientState) CheckSubstituteAndUpdateState(
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	out, err := callContract(c.CodeId, ctx, store, encodedData)
+	out, err := callContract(c.CodeHash, ctx, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -411,7 +411,7 @@ func (c *ClientState) VerifyClientState(store sdk.KVStore, cdc codec.BinaryCodec
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -449,7 +449,7 @@ func (c *ClientState) VerifyClientConsensusState(store sdk.KVStore, cdc codec.Bi
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -488,7 +488,7 @@ func (c *ClientState) VerifyConnectionState(store sdk.KVStore, cdc codec.BinaryC
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -528,7 +528,7 @@ func (c *ClientState) VerifyChannelState(store sdk.KVStore, cdc codec.BinaryCode
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -571,7 +571,7 @@ func (c *ClientState) VerifyPacketCommitment(ctx sdk.Context, store sdk.KVStore,
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -614,7 +614,7 @@ func (c *ClientState) VerifyPacketAcknowledgement(ctx sdk.Context, store sdk.KVS
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -656,7 +656,7 @@ func (c *ClientState) VerifyPacketReceiptAbsence(ctx sdk.Context, store sdk.KVSt
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
@@ -698,7 +698,7 @@ func (c *ClientState) VerifyNextSequenceRecv(ctx sdk.Context, store sdk.KVStore,
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-	response, err := queryContractWithStore(c.CodeId, store, encodedData)
+	response, err := queryContractWithStore(c.CodeHash, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
