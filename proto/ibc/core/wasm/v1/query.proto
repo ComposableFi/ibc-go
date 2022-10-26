@@ -7,7 +7,6 @@ option go_package = "github.com/cosmos/ibc-go/v5/modules/core/28-wasm/types";
 
 import "ibc/core/wasm/v1/genesis.proto";
 
-
 // Query service for wasm module
 service Query {
   // Get Wasm code for given code id

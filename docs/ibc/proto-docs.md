@@ -379,6 +379,7 @@
 - [ibc/lightclients/wasm/v1/wasm.proto](#ibc/lightclients/wasm/v1/wasm.proto)
     - [ClientState](#ibc.lightclients.wasm.v1.ClientState)
     - [ConsensusState](#ibc.lightclients.wasm.v1.ConsensusState)
+    - [Header](#ibc.lightclients.wasm.v1.Header)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -4448,7 +4449,7 @@ GenesisState defines the ibc module's genesis state.
 <a name="ibc.core.wasm.v1.WasmLightClient"></a>
 
 ### WasmLightClient
-
+WasmLightClient defines the ibc module's LightClient's state.
 
 
 | Field | Type | Label | Description |
@@ -5580,6 +5581,22 @@ Wasm light client's ConsensusState
 | `data` | [bytes](#bytes) |  |  |
 | `name` | [string](#string) |  |  |
 | `stored_height` | [ibc.core.client.v1.Height](#ibc.core.client.v1.Height) |  |  |
+
+
+
+
+
+
+<a name="ibc.lightclients.wasm.v1.Header"></a>
+
+### Header
+Wasm light client's Header
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `data` | [bytes](#bytes) |  |  |
+| `latest_height` | [ibc.core.client.v1.Height](#ibc.core.client.v1.Height) |  |  |
 
 
 

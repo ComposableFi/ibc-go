@@ -1,8 +1,6 @@
 syntax = "proto3";
 package ibc.core.wasm.v1;
 
-import "gogoproto/gogo.proto";
-
 option go_package = "github.com/cosmos/ibc-go/v5/modules/core/28-wasm/types";
 
 import "ibc/core/wasm/v1/genesis.proto";
@@ -11,7 +9,7 @@ import "ibc/core/wasm/v1/genesis.proto";
 service Msg {
   // SubmitWasmLightClient defines a rpc handler method for SubmitWasmLightClient.
   rpc SubmitWasmLightClient(MsgSubmitWasmLightClient) returns (MsgSubmitWasmLightClientResponse);
-  
+
   // TODO: decide if we need update and delete functionality
   // UpdateLightClient defines a rpc handler method for UpdateLightClient.
   // rpc UpdateLightClient(MsgUpdateLightClient) returns (MsgUpdateLightClientResponse);
@@ -28,5 +26,5 @@ message MsgSubmitWasmLightClient {
 
 // Response in case of successful handling
 message MsgSubmitWasmLightClientResponse {
-  bytes  code_id   = 1;
+  bytes code_id = 1;
 }

@@ -4,13 +4,12 @@ package ibc.core.wasm.v1;
 
 option go_package = "github.com/cosmos/ibc-go/v5/modules/core/28-wasm/types";
 
-import "gogoproto/gogo.proto";
-
 // GenesisState defines the ibc module's genesis state.
 message GenesisState {
   repeated WasmLightClient wasm_light_clients = 1;
 }
 
+// WasmLightClient defines the ibc module's LightClient's state.
 message WasmLightClient {
   string name       = 1;
   string repository = 2;
