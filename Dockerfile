@@ -16,8 +16,10 @@ COPY Makefile .
 
 RUN make build
 
-FROM ubuntu:20.04
+# FROM ubuntu:20.04
 
-COPY --from=builder /go/build/simd /bin/simd
+# COPY --from=builder /go/build/simd /bin/simd
+
+RUN mv /go/build/simd /bin/simd
 
 ENTRYPOINT ["simd"]
