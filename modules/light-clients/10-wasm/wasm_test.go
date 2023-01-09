@@ -3,6 +3,7 @@ package wasm_test
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"math"
 	"os"
 	"testing"
@@ -183,7 +184,16 @@ func (suite *WasmTestSuite) TestCreateClient() {
 				}
 				path.EndpointB.ClientConfig = ibctesting.NewWasmConfig(suite.consensusState, suite.clientState, configHeader)
 				suite.coordinator.SetupClients(path)
-				suite.coordinator.SetupConnections(path)
+				// suite.coordinator.SetupConnections(path)
+
+				k := suite.chainA.App.GetIBCKeeper().ClientKeeper
+				// key := suite.chainA.GetSimApp().GetKey(ibchost.StoreKey)
+				// fullkey := host.FullClientStateKey("unnamed_client")
+				// store := prefix.NewStore(suite.ctx.KVStore(k.storeKey), fullkey)
+				// fmt.Println("GET: ", store.Get([]byte("")))
+				clientStore := k.ClientStore(suite.chainA.GetContext(), "10-wasm")
+				fmt.Println("GET: ", clientStore.Get([]byte("")))
+				// store := prefix.NewStore(suite.ctx.KVStore(key), host.FullClientKey("1337", []byte(fmt.Sprintf("%s/", host.KeyConsensusStatePrefix))))
 			})
 		}
 	}
