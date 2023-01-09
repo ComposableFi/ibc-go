@@ -31,12 +31,11 @@ func (c ClientState) Validate() error {
 	if c.CodeId == nil || len(c.CodeId) == 0 {
 		return fmt.Errorf("codeid cannot be empty")
 	}
-	
+
 	return nil
 }
 
 func (c ClientState) Status(ctx sdk.Context, store sdk.KVStore, cdc codec.BinaryCodec) exported.Status {
-	// TODO: store the status of the client in the SDK store to make it easier to query?
 	return exported.Active
 }
 
@@ -49,16 +48,16 @@ func (c ClientState) ExportMetadata(store sdk.KVStore) []exported.GenesisMetadat
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		panic(err)
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		panic(err)
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		panic(err)
 	}
 
 	genesisMetadata := make([]exported.GenesisMetadata, len(output.GenesisMetadata))
@@ -190,7 +189,7 @@ func (c ClientState) CheckForMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec
 
 // UpdateStateOnMisbehaviour should perform appropriate state changes on a client state given that misbehaviour has been detected and verified
 func (c ClientState) UpdateStateOnMisbehaviour(ctx sdk.Context, cdc codec.BinaryCodec, clientStore sdk.KVStore, clientMsg exported.ClientMessage) {
-	const updateStateOnMisbehaviour = "update_state_on_misbehaviour_msg"
+	const updateStateOnMisbehaviour = "update_state_on_misbehaviour"
 	payload := make(map[string]map[string]interface{})
 	payload[updateStateOnMisbehaviour] = make(map[string]interface{})
 	inner := payload[updateStateOnMisbehaviour]
@@ -283,7 +282,45 @@ func (c ClientState) VerifyUpgradeAndUpdateState(
 	proofUpgradeClient,
 	proofUpgradeConsState []byte,
 ) error {
-	// TODO: implement
+	wasmUpgradeConsState, ok := newConsState.(*ConsensusState)
+	if !ok {
+		return sdkerrors.Wrapf(clienttypes.ErrInvalidConsensus, "upgraded consensus state must be wasm light consensus state. expected %T, got: %T",
+			&ConsensusState{}, wasmUpgradeConsState)
+	}
+
+	// last height of current counterparty chain must be client's latest height
+	lastHeight := c.LatestHeight
+	_, err := GetConsensusState(store, cdc, lastHeight)
+	if err != nil {
+		return sdkerrors.Wrap(err, "could not retrieve consensus state for lastHeight")
+	}
+
+	const checkForMisbehaviourMessage = "verify_upgrade_and_update_state_msg"
+	payload := make(map[string]map[string]interface{})
+	payload[checkForMisbehaviourMessage] = make(map[string]interface{})
+	inner := payload[checkForMisbehaviourMessage]
+	inner["old_client_state"] = c
+	inner["upgrade_client_state"] = newClient
+	inner["upgrade_consensus_state"] = newConsState
+	inner["proof_upgrade_client"] = proofUpgradeClient
+	inner["proof_upgrade_consensus_state"] = proofUpgradeConsState
+
+	encodedData, err := json.Marshal(payload)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
+	}
+	out, err := callContract(c.CodeId, ctx, store, encodedData)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
+	}
+	output := contractResult{}
+	if err := json.Unmarshal(out.Data, &output); err != nil {
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
+	}
+	if !output.IsValid {
+		return fmt.Errorf("%s error occurred while verifyig upgrade and updating client state", output.ErrorMsg)
+	}
+
 	return nil
 }
 
@@ -302,9 +339,9 @@ func NewClientState(latestSequence uint64, consensusState *ConsensusState) *Clie
 	}
 }
 
-/// Calls the contract with the given payload and writes the result to `output`
+// / Calls the contract with the given payload and writes the result to `output`
 func call[T ContractResult](payload any, c *ClientState, ctx sdk.Context, clientStore types.KVStore) (T, error) {
-	var output T 
+	var output T
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
 		return output, sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
@@ -314,7 +351,7 @@ func call[T ContractResult](payload any, c *ClientState, ctx sdk.Context, client
 		return output, sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	if err := json.Unmarshal(out.Data, &output); err != nil {
-		return output ,sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
+		return output, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	if !output.Validate() {
 		return output, fmt.Errorf("%s error occurred while calling contract", output.Error())
