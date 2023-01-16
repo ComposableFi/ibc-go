@@ -19,5 +19,4 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	solomachinetypes.RegisterInterfaces(registry)
 	ibctm.RegisterInterfaces(registry)
 	commitmenttypes.RegisterInterfaces(registry)
-	// wasmtypes.RegisterInterfaces(registry)
 }
