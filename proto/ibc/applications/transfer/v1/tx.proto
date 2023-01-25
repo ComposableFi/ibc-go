@@ -41,4 +41,6 @@ message MsgTransfer {
 }
 
 // MsgTransferResponse defines the Msg/Transfer response type.
-message MsgTransferResponse {}
+message MsgTransferResponse {
+  uint64 sequence = 1;
+}
