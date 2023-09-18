@@ -1,7 +1,9 @@
 package types_test
 
 import (
+	"encoding/hex"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,6 +27,21 @@ func (suite *MerkleTestSuite) TestVerifyMembership() {
 
 	proof, err := types.ConvertProofs(res.ProofOps)
 	require.NoError(suite.T(), err)
+
+	log.Println(hex.EncodeToString(cid.Hash))
+	log.Println(hex.EncodeToString([]byte("MYABSENTKEY")))
+	log.Println(hex.EncodeToString([]byte("MYVALUE")))
+	data := make([]byte, proof.Size())
+	proof.MarshalTo(data)
+	log.Println(hex.EncodeToString(data))
+
+	for i := 0; i < len(res.ProofOps.Ops); i++ {
+		log.Println("ASD")
+		log.Println(res.ProofOps.Ops[i].Type)
+		log.Println(res.ProofOps.Ops[i].Key)
+		log.Println(hex.EncodeToString(res.ProofOps.Ops[i].Key))
+		log.Println(res.ProofOps.Ops[i].Data)
+	}
 
 	suite.Require().NoError(proof.ValidateBasic())
 	suite.Require().Error(types.MerkleProof{}.ValidateBasic())
