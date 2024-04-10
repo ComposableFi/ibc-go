@@ -14,6 +14,7 @@ import (
 	connectionkeeper "github.com/cosmos/ibc-go/v7/modules/core/03-connection/keeper"
 	connectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
 	channelkeeper "github.com/cosmos/ibc-go/v7/modules/core/04-channel/keeper"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	portkeeper "github.com/cosmos/ibc-go/v7/modules/core/05-port/keeper"
 	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v7/modules/core/types"
@@ -33,6 +34,8 @@ type Keeper struct {
 	ChannelKeeper    channelkeeper.Keeper
 	PortKeeper       portkeeper.Keeper
 	Router           *porttypes.Router
+
+	timeoutPackets map[channeltypes.PacketId]bool
 }
 
 // NewKeeper creates a new ibc Keeper
@@ -72,6 +75,7 @@ func NewKeeper(
 		ConnectionKeeper: connectionKeeper,
 		ChannelKeeper:    channelKeeper,
 		PortKeeper:       portKeeper,
+		timeoutPackets:   make(map[channeltypes.PacketId]bool),
 	}
 }
 

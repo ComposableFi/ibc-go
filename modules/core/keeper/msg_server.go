@@ -485,6 +485,15 @@ func (k Keeper) RecvPacket(goCtx context.Context, msg *channeltypes.MsgRecvPacke
 
 // Timeout defines a rpc handler method for MsgTimeout.
 func (k Keeper) Timeout(goCtx context.Context, msg *channeltypes.MsgTimeout) (*channeltypes.MsgTimeoutResponse, error) {
+	packetID := channeltypes.NewPacketID(
+		msg.Packet.SourcePort, msg.Packet.SourceChannel, msg.Packet.Sequence,
+	)
+	if found, exists := k.timeoutPackets[packetID]; exists && found {
+		return &channeltypes.MsgTimeoutResponse{Result: channeltypes.NOOP}, nil
+	}
+
+	k.timeoutPackets[packetID] = true
+	defer delete(k.timeoutPackets, packetID)
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	relayer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -558,6 +567,16 @@ func (k Keeper) Timeout(goCtx context.Context, msg *channeltypes.MsgTimeout) (*c
 
 // TimeoutOnClose defines a rpc handler method for MsgTimeoutOnClose.
 func (k Keeper) TimeoutOnClose(goCtx context.Context, msg *channeltypes.MsgTimeoutOnClose) (*channeltypes.MsgTimeoutOnCloseResponse, error) {
+	packetID := channeltypes.NewPacketID(
+		msg.Packet.SourcePort, msg.Packet.SourceChannel, msg.Packet.Sequence,
+	)
+	if found, exists := k.timeoutPackets[packetID]; exists && found {
+		return &channeltypes.MsgTimeoutOnCloseResponse{Result: channeltypes.NOOP}, nil
+	}
+
+	k.timeoutPackets[packetID] = true
+	defer delete(k.timeoutPackets, packetID)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	relayer, err := sdk.AccAddressFromBech32(msg.Signer)
