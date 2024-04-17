@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	wasmtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/08-wasm/types"
 
@@ -223,10 +224,12 @@ func MaybeDecodeWasmData(codec codec.BinaryCodec, any *codectypes.Any) {
 			var innerAny codectypes.Any
 			err = codec.Unmarshal(state.Data, &innerAny)
 			if err == nil {
-				state.XInner = &wasmtypes.ClientState_Inner{Inner: &innerAny}
-				bts, err := state.Marshal()
-				if err == nil {
-					any.Value = bts
+				if innerAny.TypeUrl == "/ibc.lightclients.grandpa.v1.ClientState" {
+					state.XInner = &wasmtypes.ClientState_Inner{Inner: &innerAny}
+					bts, err := state.Marshal()
+					if err == nil {
+						any.Value = bts
+					}
 				}
 			}
 		}
